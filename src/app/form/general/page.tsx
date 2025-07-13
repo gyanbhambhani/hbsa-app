@@ -8,7 +8,7 @@ import { useFormStore } from '@/store/formStore'
 
 export default function GeneralPage() {
   const router = useRouter()
-  const { generalResponses, setGeneralResponses, selectedCommittees } = useFormStore()
+  const { generalResponses, setGeneralResponses } = useFormStore()
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
 
   const validateForm = () => {
@@ -24,16 +24,16 @@ export default function GeneralPage() {
 
   const handleNext = () => {
     if (validateForm()) {
-      router.push('/form/submit')
+      router.push('/form/committees')
     }
   }
 
   const handleBack = () => {
-    router.push(`/form/questions/${selectedCommittees[selectedCommittees.length - 1]}`)
+    router.push('/form/basic-info')
   }
 
-  const stepNumber = 2 + selectedCommittees.length + 1 // After basic info, committees, and committee questions
-  const totalSteps = 2 + selectedCommittees.length + 2 // +2 for general and submit
+  const stepNumber = 2 // After basic info
+  const totalSteps = 4 // Basic info, General, Committees, Submit
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50">
@@ -41,35 +41,29 @@ export default function GeneralPage() {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-lg">H</span>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">HBSA Application</h1>
-                <p className="text-sm text-gray-600">Step {stepNumber} of {totalSteps}</p>
-              </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">HBSA Application</h1>
+              <p className="text-sm text-gray-600">Step {stepNumber} of {totalSteps}</p>
             </div>
             
             {/* Progress Bar */}
             <div className="hidden sm:block">
               <div className="flex items-center space-x-2">
-                {Array.from({ length: totalSteps }, (_, i) => (
-                  <div key={i} className="flex items-center">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                      i < stepNumber ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-600'
-                    }`}>
-                      {i + 1}
-                    </div>
-                    {i < totalSteps - 1 && (
-                      <div className="w-12 h-1 bg-gray-200 rounded-full mx-2">
-                        <div className={`h-1 bg-primary-600 rounded-full transition-all duration-300 ${
-                          i < stepNumber - 1 ? 'w-full' : 'w-0'
-                        }`}></div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-yellow-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                  1
+                </div>
+                <div className="w-12 h-1 bg-gradient-to-r from-blue-600 to-yellow-500 rounded-full"></div>
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-yellow-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                  2
+                </div>
+                <div className="w-12 h-1 bg-gray-200 rounded-full"></div>
+                <div className="w-8 h-8 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center text-sm font-semibold">
+                  3
+                </div>
+                <div className="w-12 h-1 bg-gray-200 rounded-full"></div>
+                <div className="w-8 h-8 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center text-sm font-semibold">
+                  4
+                </div>
               </div>
             </div>
           </div>
@@ -151,14 +145,7 @@ export default function GeneralPage() {
           </div>
 
           {/* Action Buttons */}
-          <div className="flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
-            <div className="text-gray-600 text-center sm:text-left">
-              <span className="font-semibold text-primary-600">
-                {selectedCommittees.length}
-              </span>
-              <span className="mx-1">committee{selectedCommittees.length !== 1 ? 's' : ''} selected</span>
-            </div>
-            
+          <div className="flex justify-between items-center">
             <div className="flex space-x-4 w-full sm:w-auto">
               <button
                 onClick={handleBack}
@@ -170,9 +157,9 @@ export default function GeneralPage() {
               
               <button
                 onClick={handleNext}
-                className="px-8 py-3 bg-blue-600 text-white rounded-xl font-semibold shadow-large hover:shadow-glow transition-all duration-300 flex items-center"
+                className="px-8 py-3 bg-gradient-to-r from-blue-600 to-yellow-500 text-white rounded-xl font-semibold shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-yellow-400 transition-all duration-300 flex items-center"
               >
-                Review Application
+                Continue
                 <ArrowRightIcon className="w-4 h-4 ml-2" />
               </button>
             </div>

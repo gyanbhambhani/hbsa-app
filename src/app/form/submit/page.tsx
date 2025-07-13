@@ -22,13 +22,17 @@ export default function SubmitPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [submitSuccess, setSubmitSuccess] = useState(false)
+  const [uploadedFileName, setUploadedFileName] = useState('')
 
   const handleResumeUpload = (file: File) => {
-    // Store the file name and create a local URL for display
+    // Temporary: Store file info for display
     const fileName = file.name
-    const fileSize = (file.size / 1024 / 1024).toFixed(2) // Convert to MB
+    const fileSize = (file.size / 1024 / 1024).toFixed(2)
     const displayText = `${fileName} (${fileSize} MB)`
-    setResumeUrl(displayText)
+    setUploadedFileName(displayText)
+    
+    // For testing, use a placeholder URL
+    setResumeUrl('https://uploadthing.com/f/test-resume.pdf')
   }
 
   const handleSubmit = async () => {
@@ -50,6 +54,8 @@ export default function SubmitPage() {
         submittedAt: new Date().toISOString()
       }
 
+      console.log('Submitting form data:', formData)
+
       const response = await fetch('/api/submit', {
         method: 'POST',
         headers: {
@@ -59,13 +65,15 @@ export default function SubmitPage() {
       })
 
       const result = await response.json()
+      console.log('Submit response:', result)
 
       if (response.ok && result.success) {
         setSubmitSuccess(true)
       } else {
         setSubmitError(result.error || 'Failed to submit application. Please try again.')
       }
-    } catch {
+    } catch (error) {
+      console.error('Submit error:', error)
       setSubmitError('Failed to submit application. Please try again.')
     } finally {
       setIsSubmitting(false)
@@ -73,11 +81,15 @@ export default function SubmitPage() {
   }
 
   const handleBack = () => {
-    router.push('/form/general')
+    if (selectedCommittees.length > 0) {
+      router.push(`/form/questions/${selectedCommittees[selectedCommittees.length - 1]}`)
+    } else {
+      router.push('/form/committees')
+    }
   }
 
-  const stepNumber = 2 + selectedCommittees.length + 2
-  const totalSteps = 2 + selectedCommittees.length + 2
+  const stepNumber = 4 + selectedCommittees.length // After basic info, general, committees, and committee questions
+  const totalSteps = 4 + selectedCommittees.length
 
   if (submitSuccess) {
     return (
@@ -123,35 +135,37 @@ export default function SubmitPage() {
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-lg">H</span>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">HBSA Application</h1>
-                <p className="text-sm text-gray-600">Step {stepNumber} of {totalSteps}</p>
-              </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">HBSA Application</h1>
+              <p className="text-sm text-gray-600">Step {stepNumber} of {totalSteps}</p>
             </div>
             
             {/* Progress Bar */}
             <div className="hidden sm:block">
               <div className="flex items-center space-x-2">
-                {Array.from({ length: totalSteps }, (_, i) => (
-                  <div key={i} className="flex items-center">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                      i < stepNumber ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-600'
-                    }`}>
-                      {i + 1}
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-yellow-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                  1
+                </div>
+                <div className="w-12 h-1 bg-gradient-to-r from-blue-600 to-yellow-500 rounded-full"></div>
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-yellow-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                  2
+                </div>
+                <div className="w-12 h-1 bg-gradient-to-r from-blue-600 to-yellow-500 rounded-full"></div>
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-yellow-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                  3
+                </div>
+                <div className="w-12 h-1 bg-gradient-to-r from-blue-600 to-yellow-500 rounded-full"></div>
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-yellow-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                  4
+                </div>
+                {selectedCommittees.length > 0 && (
+                  <>
+                    <div className="w-12 h-1 bg-gradient-to-r from-blue-600 to-yellow-500 rounded-full"></div>
+                    <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-yellow-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                      {4 + selectedCommittees.length}
                     </div>
-                    {i < totalSteps - 1 && (
-                      <div className="w-12 h-1 bg-gray-200 rounded-full mx-2">
-                        <div className={`h-1 bg-primary-600 rounded-full transition-all duration-300 ${
-                          i < stepNumber - 1 ? 'w-full' : 'w-0'
-                        }`}></div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  </>
+                )}
               </div>
             </div>
           </div>
@@ -196,7 +210,7 @@ export default function SubmitPage() {
           >
             <ResumeUploader
               onUpload={handleResumeUpload}
-              uploadedFile={resumeUrl}
+              uploadedFile={uploadedFileName || resumeUrl}
               error={submitError && !resumeUrl ? submitError : undefined}
             />
           </motion.div>
@@ -301,6 +315,17 @@ export default function SubmitPage() {
               )}
             </button>
           </div>
+
+          {/* Error Message */}
+          {submitError && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="bg-error-50 border border-error-200 rounded-xl p-4 text-error-700"
+            >
+              <p className="font-medium">{submitError}</p>
+            </motion.div>
+          )}
         </motion.div>
       </div>
     </div>

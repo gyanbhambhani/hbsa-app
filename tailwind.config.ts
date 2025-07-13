@@ -13,17 +13,18 @@ const config: Config = {
         'sans': ['var(--font-inter)', 'Inter', 'system-ui', 'sans-serif'],
       },
       colors: {
+        // Cal Berkeley Colors
         primary: {
-          50: '#eff6ff',
-          100: '#dbeafe',
-          200: '#bfdbfe',
-          300: '#93c5fd',
-          400: '#60a5fa',
-          500: '#3b82f6',
-          600: '#2563eb',
-          700: '#1d4ed8',
-          800: '#1e40af',
-          900: '#1e3a8a',
+          50: '#fef7f0',
+          100: '#fdecd8',
+          200: '#fbd5b0',
+          300: '#f8b87d',
+          400: '#f59447',
+          500: '#f37735',
+          600: '#e45a1f',
+          700: '#bd451a',
+          800: '#96381c',
+          900: '#7a301a',
         },
         accent: {
           50: '#f0f9ff',

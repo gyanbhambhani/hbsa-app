@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter, useParams } from 'next/navigation'
-import { motion } from 'framer-motion'
 import { ArrowRightIcon, ArrowLeftIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline'
 import QuestionBlock from '@/components/QuestionBlock'
 import { useFormStore } from '@/store/formStore'
@@ -64,7 +63,7 @@ export default function CommitteeQuestionsPage() {
     if (nextCommitteeId) {
       router.push(`/form/questions/${nextCommitteeId}`)
     } else {
-      router.push('/form/general')
+      router.push('/form/submit')
     }
   }
 
@@ -91,44 +90,50 @@ export default function CommitteeQuestionsPage() {
   }
 
   const currentIndex = selectedCommittees.indexOf(committeeId)
-  const stepNumber = 2 + currentIndex + 1
-  const totalSteps = 2 + selectedCommittees.length + 2
+  const stepNumber = 3 + currentIndex // After basic info, general, committees
+  const totalSteps = 4 + selectedCommittees.length // +1 for submit
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
       <div className="bg-white border-b border-gray-200">
         <div className="max-w-4xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-gradient-primary rounded-xl flex items-center justify-center">
-                <span className="text-white font-bold text-lg">H</span>
-              </div>
-              <div>
-                <h1 className="text-xl font-bold text-gray-900">HBSA Application</h1>
-                <p className="text-sm text-gray-600">Step {stepNumber} of {totalSteps}</p>
-              </div>
+            <div>
+              <h1 className="text-xl font-bold text-gray-900">HBSA Application</h1>
+              <p className="text-sm text-gray-600">Step {stepNumber} of {totalSteps}</p>
             </div>
             
             {/* Progress Bar */}
             <div className="hidden sm:block">
               <div className="flex items-center space-x-2">
-                {Array.from({ length: totalSteps }, (_, i) => (
-                  <div key={i} className="flex items-center">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold ${
-                      i < stepNumber ? 'bg-primary-600 text-white' : 'bg-gray-200 text-gray-600'
-                    }`}>
-                      {i + 1}
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-yellow-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                  1
+                </div>
+                <div className="w-12 h-1 bg-gradient-to-r from-blue-600 to-yellow-500 rounded-full"></div>
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-yellow-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                  2
+                </div>
+                <div className="w-12 h-1 bg-gradient-to-r from-blue-600 to-yellow-500 rounded-full"></div>
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-yellow-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                  3
+                </div>
+                <div className="w-12 h-1 bg-gradient-to-r from-blue-600 to-yellow-500 rounded-full"></div>
+                <div className="w-8 h-8 bg-gradient-to-r from-blue-600 to-yellow-500 text-white rounded-full flex items-center justify-center text-sm font-semibold">
+                  {3 + currentIndex + 1}
+                </div>
+                {currentIndex + 1 < selectedCommittees.length && (
+                  <>
+                    <div className="w-12 h-1 bg-gray-200 rounded-full"></div>
+                    <div className="w-8 h-8 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center text-sm font-semibold">
+                      {3 + currentIndex + 2}
                     </div>
-                    {i < totalSteps - 1 && (
-                      <div className="w-12 h-1 bg-gray-200 rounded-full mx-2">
-                        <div className={`h-1 bg-primary-600 rounded-full transition-all duration-300 ${
-                          i < stepNumber - 1 ? 'w-full' : 'w-0'
-                        }`}></div>
-                      </div>
-                    )}
-                  </div>
-                ))}
+                  </>
+                )}
+                <div className="w-12 h-1 bg-gray-200 rounded-full"></div>
+                <div className="w-8 h-8 bg-gray-200 text-gray-600 rounded-full flex items-center justify-center text-sm font-semibold">
+                  {4 + selectedCommittees.length}
+                </div>
               </div>
             </div>
           </div>
@@ -137,29 +142,19 @@ export default function CommitteeQuestionsPage() {
 
       {/* Main Content */}
       <div className="max-w-4xl mx-auto px-6 py-12">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
-          className="space-y-8"
-        >
+        <div className="space-y-8">
           {/* Page Header */}
           <div className="text-center space-y-4">
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1 }}
-              className="inline-flex items-center px-4 py-2 bg-primary-100 text-primary-700 rounded-full text-sm font-medium"
-            >
+            <div className="inline-flex items-center px-3 py-1 bg-primary-100 text-primary-700 rounded-full text-sm font-medium">
               <ChatBubbleLeftRightIcon className="w-4 h-4 mr-2" />
               Committee Questions
-            </motion.div>
+            </div>
             
-            <h2 className="text-4xl font-bold text-gray-900">
+            <h2 className="text-3xl font-bold text-gray-900">
               {committee.label}
             </h2>
             
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
               {committee.description}
             </p>
             
@@ -170,22 +165,17 @@ export default function CommitteeQuestionsPage() {
           </div>
 
           {/* Questions */}
-          <div className="bg-white rounded-2xl shadow-large border border-gray-100 p-8">
-            <div className="space-y-8">
-              {committee.questions.map((question: Question, index: number) => (
-                <motion.div
-                  key={question.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ duration: 0.5, delay: index * 0.1 }}
-                >
+          <div className="bg-white rounded-lg border border-gray-200 p-6">
+            <div className="space-y-6">
+              {committee.questions.map((question: Question) => (
+                <div key={question.id}>
                   <QuestionBlock
                     question={question}
                     value={committeeResponses[committeeId]?.[question.id] || ''}
                     onChange={(value) => setCommitteeResponse(committeeId, question.id, value as string)}
                     error={errors[question.id]}
                   />
-                </motion.div>
+                </div>
               ))}
             </div>
           </div>
@@ -206,7 +196,7 @@ export default function CommitteeQuestionsPage() {
             <div className="flex space-x-4 w-full sm:w-auto">
               <button
                 onClick={handlePrevious}
-                className="px-6 py-3 border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:border-primary-300 hover:text-primary-700 transition-colors duration-200 flex items-center"
+                className="px-4 py-2 border border-gray-300 text-gray-700 rounded-lg font-medium hover:border-primary-300 hover:text-primary-700 transition-colors duration-200 flex items-center"
               >
                 <ArrowLeftIcon className="w-4 h-4 mr-2" />
                 Back
@@ -214,14 +204,14 @@ export default function CommitteeQuestionsPage() {
               
               <button
                 onClick={handleNext}
-                className="px-8 py-3 bg-blue-600 text-white rounded-xl font-semibold shadow-large hover:shadow-glow transition-all duration-300 flex items-center"
+                className="px-6 py-2 bg-gradient-to-r from-blue-600 to-yellow-500 text-white rounded-lg font-medium hover:from-blue-700 hover:to-yellow-400 transition-all duration-200 flex items-center"
               >
-                {currentIndex + 1 === selectedCommittees.length ? 'Continue to General Questions' : 'Next Committee'}
+                {currentIndex + 1 === selectedCommittees.length ? 'Review Application' : 'Next Committee'}
                 <ArrowRightIcon className="w-4 h-4 ml-2" />
               </button>
             </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </div>
   )

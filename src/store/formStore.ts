@@ -16,6 +16,8 @@ export interface GeneralResponses {
   whyJoinHBSA: string
 }
 
+
+
 export interface FormState {
   // Basic Info
   basicInfo: BasicInfo
@@ -37,6 +39,7 @@ export interface FormState {
   setSelectedCommittees: (committees: string[]) => void
   setCommitteeResponse: (committeeId: string, questionId: string, response: string) => void
   setGeneralResponses: (responses: Partial<GeneralResponses>) => void
+
   setResumeUrl: (url: string) => void
   resetForm: () => void
 }
@@ -52,6 +55,7 @@ const initialState = {
   generalResponses: {
     whyJoinHBSA: ''
   },
+
   resumeUrl: ''
 }
 
@@ -81,6 +85,8 @@ export const useFormStore = create<FormState>((set) => ({
     set((state) => ({
       generalResponses: { ...state.generalResponses, ...responses }
     })),
+  
+
   
   setResumeUrl: (url) => set({ resumeUrl: url }),
   
