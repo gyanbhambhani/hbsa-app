@@ -17,3 +17,4 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
+console.log("✅ next.config.ts loaded — headers applied!");
