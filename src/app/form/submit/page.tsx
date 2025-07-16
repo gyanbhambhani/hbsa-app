@@ -3,8 +3,8 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { CheckIcon, ArrowLeftIcon, DocumentArrowUpIcon, UserIcon, UserGroupIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline'
-import ResumeUploader from '@/components/ResumeUploader'
+import { CheckIcon, ArrowLeftIcon, DocumentArrowUpIcon, UserGroupIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline'
+import ResumeLinkInput from '@/components/ResumeLinkInput'
 import { useFormStore } from '@/store/formStore'
 import { committees } from '@/data/committees'
 
@@ -19,25 +19,31 @@ export default function SubmitPage() {
     setResumeUrl
   } = useFormStore()
   
+  // Debug logging
+  console.log('Form Store Data:', {
+    basicInfo,
+    selectedCommittees,
+    committeeResponses,
+    generalResponses,
+    resumeUrl
+  })
+
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [submitSuccess, setSubmitSuccess] = useState(false)
-  const [uploadedFileName, setUploadedFileName] = useState('')
+  const [resumeLinkError, setResumeLinkError] = useState('')
 
-  const handleResumeUpload = (file: File) => {
-    // Temporary: Store file info for display
-    const fileName = file.name
-    const fileSize = (file.size / 1024 / 1024).toFixed(2)
-    const displayText = `${fileName} (${fileSize} MB)`
-    setUploadedFileName(displayText)
-    
-    // For testing, use a placeholder URL
-    setResumeUrl('https://uploadthing.com/f/test-resume.pdf')
+  const handleResumeLinkChange = (url: string) => {
+    setResumeUrl(url)
+    setResumeLinkError('')
   }
 
   const handleSubmit = async () => {
-    if (!resumeUrl) {
-      setSubmitError('Please upload your resume before submitting')
+    // Accept any valid link
+    try {
+      new URL(resumeUrl)
+    } catch {
+      setResumeLinkError('Please provide a valid link to your resume')
       return
     }
 
@@ -113,8 +119,9 @@ export default function SubmitPage() {
               Application Submitted Successfully!
             </h1>
             
-            <p className="text-xl text-gray-600 leading-relaxed mb-12 max-w-2xl mx-auto">
-              Thank you for your interest in HBSA. We&apos;ll review your application and get back to you soon.
+            <p className="text-xl text-gray-600 leading-relaxed mb-8 max-w-2xl mx-auto">
+              Thank you for your interest in HBSA. We&apos;ll review your application and get back to you soon.<br /><br />
+              <span className="font-semibold text-primary-700">Check your email for a confirmation.</span> If you haven&apos;t received one, please reach out to <a href="mailto:gyanb@berkeley.edu" className="underline text-blue-700">gyanb@berkeley.edu</a>.
             </p>
             
             <button
@@ -136,7 +143,7 @@ export default function SubmitPage() {
         <div className="max-w-4xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-gray-900">HBSA Application</h1>
+              <h1 className="text-xl font-bold text-gray-900">HBSA Fall 2025 Associate Application</h1>
               <p className="text-sm text-gray-600">Step {stepNumber} of {totalSteps}</p>
             </div>
             
@@ -201,17 +208,17 @@ export default function SubmitPage() {
             </p>
           </div>
 
-          {/* Resume Upload */}
+          {/* Resume Upload (now Google Drive Link) */}
           <motion.div
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ delay: 0.2 }}
             className="bg-white rounded-2xl shadow-large border border-gray-100 p-8"
           >
-            <ResumeUploader
-              onUpload={handleResumeUpload}
-              uploadedFile={uploadedFileName || resumeUrl}
-              error={submitError && !resumeUrl ? submitError : undefined}
+            <ResumeLinkInput
+              value={resumeUrl}
+              onChange={handleResumeLinkChange}
+              error={resumeLinkError}
             />
           </motion.div>
 
@@ -223,51 +230,25 @@ export default function SubmitPage() {
             className="space-y-6"
           >
             <h3 className="text-2xl font-bold text-gray-900 text-center">Application Review</h3>
-            
             {/* Basic Info */}
-            <div className="bg-white rounded-2xl shadow-large border border-gray-100 p-8">
-              <div className="flex items-center mb-6">
-                <div className="w-10 h-10 bg-primary-100 rounded-xl flex items-center justify-center mr-4">
-                  <UserIcon className="w-5 h-5 text-primary-600" />
+            <div className="bg-gray-50 rounded-xl p-6 border border-gray-100 space-y-2">
+              <div className="flex flex-col sm:flex-row sm:space-x-8">
+                <div className="flex-1">
+                  <span className="block text-gray-500 text-sm font-medium">Full Name</span>
+                  <span className="block text-lg font-semibold text-gray-900">{basicInfo.name || 'Not provided'}</span>
                 </div>
-                <h4 className="text-xl font-bold text-gray-900">Basic Information</h4>
-              </div>
-              
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <p className="font-semibold text-sm text-gray-500 uppercase tracking-wide mb-1">Name</p>
-                  <p className="text-lg text-gray-900">{basicInfo.name}</p>
+                <div className="flex-1">
+                  <span className="block text-gray-500 text-sm font-medium">Email</span>
+                  <span className="block text-lg font-semibold text-gray-900">{basicInfo.email || 'Not provided'}</span>
                 </div>
-                <div>
-                  <p className="font-semibold text-sm text-gray-500 uppercase tracking-wide mb-1">Graduating Year</p>
-                  <p className="text-lg text-gray-900">{basicInfo.graduatingYear}</p>
-                </div>
-                <div className="md:col-span-2">
-                  <p className="font-semibold text-sm text-gray-500 uppercase tracking-wide mb-2">Core Value Response</p>
-                  <p className="text-gray-700 leading-relaxed">{basicInfo.coreValue}</p>
+                <div className="flex-1">
+                  <span className="block text-gray-500 text-sm font-medium">Graduating Year</span>
+                  <span className="block text-lg font-semibold text-gray-900">{basicInfo.graduatingYear || 'Not provided'}</span>
                 </div>
               </div>
-            </div>
-
-            {/* Selected Committees */}
-            <div className="bg-white rounded-2xl shadow-large border border-gray-100 p-8">
-              <div className="flex items-center mb-6">
-                <div className="w-10 h-10 bg-accent-100 rounded-xl flex items-center justify-center mr-4">
-                  <UserGroupIcon className="w-5 h-5 text-accent-600" />
-                </div>
-                <h4 className="text-xl font-bold text-gray-900">Selected Committees</h4>
-              </div>
-              
-              <div className="space-y-4">
-                {selectedCommittees.map((committeeId) => {
-                  const committee = committees.find(c => c.id === committeeId)
-                  return (
-                    <div key={committeeId} className="border-l-4 border-accent-500 pl-6 py-3 bg-accent-50 rounded-r-xl">
-                      <p className="font-bold text-lg text-gray-900">{committee?.label}</p>
-                      <p className="text-gray-600">{committee?.description}</p>
-                    </div>
-                  )
-                })}
+              <div className="mt-4">
+                <span className="block text-gray-500 text-sm font-medium">Haas Core Value</span>
+                <span className="block text-base text-gray-900">{basicInfo.coreValue || 'Not provided'}</span>
               </div>
             </div>
 
@@ -282,7 +263,71 @@ export default function SubmitPage() {
               
               <div>
                 <p className="font-semibold text-sm text-gray-500 uppercase tracking-wide mb-2">Why do you want to join HBSA?</p>
-                <p className="text-gray-700 leading-relaxed">{generalResponses.whyJoinHBSA}</p>
+                <p className="text-gray-700 leading-relaxed">{generalResponses.whyJoinHBSA || 'Not provided'}</p>
+              </div>
+            </div>
+
+            {/* Selected Committees */}
+            <div className="bg-white rounded-2xl shadow-large border border-gray-100 p-8">
+              <div className="flex items-center mb-6">
+                <div className="w-10 h-10 bg-accent-100 rounded-xl flex items-center justify-center mr-4">
+                  <UserGroupIcon className="w-5 h-5 text-accent-600" />
+                </div>
+                <h4 className="text-xl font-bold text-gray-900">Selected Committees</h4>
+              </div>
+              
+              <div className="space-y-4">
+                {selectedCommittees.length === 0 ? (
+                  <p className="text-gray-500 italic">No committees selected</p>
+                ) : (
+                  selectedCommittees.map((committeeId) => {
+                    const committee = committees.find(c => c.id === committeeId)
+                    return (
+                      <div key={committeeId} className="border-l-4 border-accent-500 pl-6 py-3 bg-accent-50 rounded-r-xl">
+                        <p className="font-bold text-lg text-gray-900">{committee?.label}</p>
+                        <p className="text-gray-600">{committee?.description}</p>
+                      </div>
+                    )
+                  })
+                )}
+              </div>
+            </div>
+
+            {/* Committee-Specific Responses */}
+            <div className="bg-white rounded-2xl shadow-large border border-gray-100 p-8">
+              <div className="flex items-center mb-6">
+                <div className="w-10 h-10 bg-blue-100 rounded-xl flex items-center justify-center mr-4">
+                  <UserGroupIcon className="w-5 h-5 text-blue-600" />
+                </div>
+                <h4 className="text-xl font-bold text-gray-900">Committee-Specific Responses</h4>
+              </div>
+              <div className="space-y-8">
+                {selectedCommittees.length === 0 ? (
+                  <p className="text-gray-500 italic">No committee responses to display</p>
+                ) : (
+                  selectedCommittees.map((committeeId) => {
+                    const committee = committees.find(c => c.id === committeeId)
+                    if (!committee) return null
+                    const responses = committeeResponses[committeeId] || {}
+                    return (
+                      <div key={committeeId} className="border-l-4 border-blue-500 pl-6 py-3 bg-blue-50 rounded-r-xl">
+                        <p className="font-bold text-lg text-gray-900 mb-2">{committee.label}</p>
+                        {committee.questions.map((q) => (
+                          <div key={q.id} className="mb-4">
+                            <p className="text-sm font-semibold text-gray-700 mb-1">{q.label}</p>
+                            <div className="bg-white border border-gray-200 rounded-lg p-3 text-gray-900">
+                              {Array.isArray(responses[q.id])
+                                ? (responses[q.id] as unknown as string[]).join(', ')
+                                : (typeof responses[q.id] === 'string' && responses[q.id])
+                                  ? responses[q.id]
+                                  : <span className="text-gray-400 italic">No response</span>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  })
+                )}
               </div>
             </div>
           </motion.div>

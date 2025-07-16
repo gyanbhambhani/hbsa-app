@@ -1,6 +1,7 @@
 export interface FormSubmission {
   basicInfo: {
     name: string
+    email: string
     graduatingYear: string
     coreValue: string
   }
@@ -105,6 +106,10 @@ function validateFormSubmission(formData: FormSubmission): string | null {
     return 'Name is required'
   }
   
+  if (!formData.basicInfo?.email?.trim()) {
+    return 'Email is required'
+  }
+  
   if (!formData.basicInfo?.graduatingYear?.trim()) {
     return 'Graduating year is required'
   }
@@ -155,6 +160,7 @@ export function formatFormDataForSheets(formData: FormSubmission) {
     timestamp: new Date().toISOString(),
     submissionId: generateSubmissionId(formData),
     name: basicInfo.name.trim(),
+    email: basicInfo.email.trim(),
     graduatingYear: basicInfo.graduatingYear.trim(),
     coreValue: basicInfo.coreValue?.trim() || '',
     selectedCommittees: selectedCommittees.join(', '),

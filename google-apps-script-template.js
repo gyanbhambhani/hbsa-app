@@ -1,11 +1,11 @@
 /**
- * Google Apps Script for HBSA Application Form
- * 
+ * Google Apps Script for HBSA Application Form (Refactored for 2025+)
+ *
  * Instructions:
  * 1. Go to https://script.google.com/
  * 2. Create a new project
  * 3. Replace the default code with this template
- * 4. Deploy as a web app (Execute as: Me, Who has access: Anyone)
+ * 4. Deploy as a web app (Execute as: Me, Who has access: Anyone)https://script.google.com/macros/s/AKfycbwIOahlEcbh4ihBnST53AUBvB-x3gIjOFPB9s4Vk22mx3r5KFOU-e1eRRZIugm_s-_T/exec
  * 5. Copy the web app URL and set it as NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL in your .env.local
  */
 
@@ -27,7 +27,6 @@ function doGet(e) {
 // Handle POST requests (for form submissions)
 function doPost(e) {
   try {
-    // Check if postData exists
     if (!e || !e.postData) {
       return ContentService
         .createTextOutput(JSON.stringify({
@@ -38,10 +37,8 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
-    // Parse the incoming JSON data
     const formData = JSON.parse(e.postData.contents);
-    
-    // Validate the data
+
     if (!validateFormData(formData)) {
       return ContentService
         .createTextOutput(JSON.stringify({
@@ -51,15 +48,13 @@ function doPost(e) {
         }))
         .setMimeType(ContentService.MimeType.JSON);
     }
-    
-    // Write to Google Sheets
+
     const success = writeToSheet(formData);
-    
+
     if (success) {
       return ContentService
         .createTextOutput(JSON.stringify({
           success: true,
-          submissionId: formData.submissionId,
           message: 'Application submitted successfully'
         }))
         .setMimeType(ContentService.MimeType.JSON);
@@ -72,7 +67,6 @@ function doPost(e) {
         }))
         .setMimeType(ContentService.MimeType.JSON);
     }
-    
   } catch (error) {
     console.error('Error processing submission:', error);
     return ContentService
@@ -86,50 +80,44 @@ function doPost(e) {
 }
 
 function validateFormData(data) {
-  // Basic validation
-  if (!data.name || !data.graduatingYear || !data.selectedCommittees || !data.resumeUrl) {
-    return false;
-  }
+  // New structure validation
+  if (!data.basicInfo || !data.basicInfo.name || !data.basicInfo.email || !data.basicInfo.graduatingYear || !data.basicInfo.coreValue) return false;
+  if (!data.selectedCommittees || !Array.isArray(data.selectedCommittees) || data.selectedCommittees.length === 0) return false;
+  if (!data.committeeResponses || typeof data.committeeResponses !== 'object') return false;
+  if (!data.generalResponses || !data.generalResponses.whyJoinHBSA) return false;
+  if (!data.resumeUrl) return false;
   return true;
 }
 
 function writeToSheet(formData) {
   try {
     const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
-    const sheet = spreadsheet.getSheetByName(SHEET_NAME);
-    
+    let sheet = spreadsheet.getSheetByName(SHEET_NAME);
     if (!sheet) {
-      // Create the sheet if it doesn't exist
-      const newSheet = spreadsheet.insertSheet(SHEET_NAME);
-      setupSheetHeaders(newSheet);
-      return writeToSheet(formData); // Recursive call with new sheet
+      sheet = spreadsheet.insertSheet(SHEET_NAME);
+      setupSheetHeaders(sheet);
     }
-    
+
     // Prepare row data
     const rowData = [
-      formData.timestamp,
-      formData.submissionId,
-      formData.name,
-      formData.graduatingYear,
-      formData.coreValue,
-      formData.selectedCommittees,
-      formData.whyJoinHBSA,
+      new Date().toISOString(),
+      Utilities.getUuid(),
+      formData.basicInfo.name,
+      formData.basicInfo.email,
+      formData.basicInfo.graduatingYear,
+      formData.basicInfo.coreValue,
+      formData.selectedCommittees.join(', '),
+      formData.generalResponses.whyJoinHBSA,
       formData.resumeUrl
     ];
-    
-    // Add committee-specific responses
-    // This will add columns for each committee question
-    const committeeColumns = extractCommitteeResponses(formData);
+
+    // Add committee-specific responses in the correct order
+    const committeeColumns = extractCommitteeResponses(formData.committeeResponses);
     rowData.push(...committeeColumns);
-    
-    // Append the row
+
     sheet.appendRow(rowData);
-    
-    // Auto-resize columns
     sheet.autoResizeColumns(1, rowData.length);
-    
     return true;
-    
   } catch (error) {
     console.error('Error writing to sheet:', error);
     return false;
@@ -141,116 +129,131 @@ function setupSheetHeaders(sheet) {
     'Timestamp',
     'Submission ID',
     'Name',
+    'Email',
     'Graduating Year',
     'Core Value',
     'Selected Committees',
     'Why Join HBSA',
     'Resume URL'
   ];
-  
-  // Add headers for committee questions
-  const committeeHeaders = getCommitteeQuestionHeaders();
-  headers.push(...committeeHeaders);
-  
-  // Set headers
+  headers.push(...getCommitteeQuestionHeaders());
   sheet.getRange(1, 1, 1, headers.length).setValues([headers]);
-  
-  // Style headers
   const headerRange = sheet.getRange(1, 1, 1, headers.length);
   headerRange.setFontWeight('bold');
   headerRange.setBackground('#4285f4');
   headerRange.setFontColor('white');
-  
-  // Freeze header row
   sheet.setFrozenRows(1);
 }
 
-function extractCommitteeResponses(formData) {
+function extractCommitteeResponses(committeeResponses) {
+  // Returns responses in the order of getCommitteeQuestionHeaders()
+  const headers = getCommitteeQuestionHeaders();
   const responses = [];
-  
-  // Extract all committee responses from the flattened data
-  Object.keys(formData).forEach(key => {
-    if (key.includes('_') && !['timestamp', 'submissionId', 'name', 'graduatingYear', 'coreValue', 'selectedCommittees', 'whyJoinHBSA', 'resumeUrl'].includes(key)) {
-      responses.push(formData[key] || '');
+  for (let i = 0; i < headers.length; i++) {
+    const [committeeId, questionId] = headers[i].split('__');
+    if (
+      committeeResponses[committeeId] &&
+      Object.prototype.hasOwnProperty.call(committeeResponses[committeeId], questionId)
+    ) {
+      responses.push(committeeResponses[committeeId][questionId]);
+    } else {
+      responses.push('');
     }
-  });
-  
+  }
   return responses;
 }
 
 function getCommitteeQuestionHeaders() {
-  // Actual committee structure from your codebase
-  const headers = [];
-  
-  // Sustainability Committee
-  headers.push('sustainability_growth');
-  headers.push('sustainability_projects');
-  
-  // MBA and Alumni Relations Committee
-  headers.push('mba-alumni-relations_leadership-impact');
-  headers.push('mba-alumni-relations_admired-alumnus');
-  
-  // Marketing Committee
-  headers.push('marketing_workload-management');
-  headers.push('marketing_initiative-idea');
-  headers.push('marketing_portfolio');
-  
-  // Strategic Initiatives Committee
-  headers.push('strategic-initiatives_strategic-project');
-  headers.push('strategic-initiatives_qualifications');
-  
-  // Student Affairs Committee
-  headers.push('student-affairs_interest-contribution');
-  headers.push('student-affairs_event-ideas');
-  headers.push('student-affairs_subcommittees');
-  
-  // Integration Committee
-  headers.push('integration_improvement-area');
-  headers.push('integration_cross-program-initiative');
-  headers.push('integration_community-meaning');
-  
-  // Transfer Development Committee
-  headers.push('transfer-development_is-transfer');
-  headers.push('transfer-development_transfer-school');
-  headers.push('transfer-development_transfer-improvements');
-  headers.push('transfer-development_role-support');
-  headers.push('transfer-development_transfer-subcommittees');
-  
-  // Professional Development Committee
-  headers.push('professional-development_qualifications-pd');
-  headers.push('professional-development_new-ideas');
-  headers.push('professional-development_industry-trends');
-  
-  // Entrepreneurship Committee
-  headers.push('entrepreneurship_pitching-experience');
-  headers.push('entrepreneurship_fund-management');
-  headers.push('entrepreneurship_digital-portal');
-  headers.push('entrepreneurship_personality-word');
-  headers.push('entrepreneurship_skill-word');
-  headers.push('entrepreneurship_favorite-word');
-  headers.push('entrepreneurship_pitch-decks');
-  
-  return headers;
+  // Update this list to match your new committee/question IDs
+  return [
+    // Strategic Initiatives
+    'strategic-initiatives__interest',
+    'strategic-initiatives__commitment',
+    'strategic-initiatives__proposal',
+    // Tech
+    'tech__excitement',
+    'tech__improvement',
+    'tech__dream-project',
+    // SOAC
+    'soac__interest',
+    'soac__communication',
+    'soac__unique-perspective',
+    'soac__improve-collab',
+    // Student Affairs
+    'student-affairs__failure',
+    'student-affairs__improve-experience',
+    'student-affairs__midterm-event',
+    // Sustainability
+    'sustainability__interest',
+    'sustainability__perspective',
+    // Professional Development
+    'professional-development__interest',
+    'professional-development__event-experience',
+    'professional-development__skills',
+    // Transfer Development
+    'transfer-development__community',
+    'transfer-development__leadership',
+    'transfer-development__inspiration',
+    // Marketing
+    'marketing__workload',
+    'marketing__initiative',
+    'marketing__portfolio',
+    // Public Service
+    'public-service__impact',
+    'public-service__initiative',
+    'public-service__ideas',
+    'public-service__fundraising',
+    // Corporate Relations
+    'corporate-relations__interest',
+    'corporate-relations__strength',
+    'corporate-relations__event',
+    // Finance
+    'finance__interest',
+    'finance__unique',
+    // Entrepreneurship
+    'entrepreneurship__motivation',
+    'entrepreneurship__spirit',
+    'entrepreneurship__event',
+    // DEI
+    'dei__bias',
+    'dei__belonging',
+    'dei__festival',
+    // MBA & Alumni Relations
+    'mba-alumni-relations__above-beyond',
+    'mba-alumni-relations__feedback',
+    'mba-alumni-relations__description',
+    'mba-alumni-relations__projects',
+    // Integration
+    'integration__cross-program',
+    'integration__event'
+  ];
 }
 
 // Optional: Function to test the setup
 function testSetup() {
   const testData = {
-    timestamp: new Date().toISOString(),
-    submissionId: 'test-123',
-    name: 'Test User',
-    graduatingYear: '2025',
-    coreValue: 'Leadership',
-    selectedCommittees: 'marketing, sustainability',
-    whyJoinHBSA: 'I want to contribute to the community',
-    resumeUrl: 'https://example.com/resume.pdf',
-    'marketing_workload-management': 'I prioritize tasks by deadline and importance',
-    'marketing_initiative-idea': 'I would create a social media campaign',
-    'marketing_portfolio': 'https://example.com/portfolio',
-    'sustainability_growth': 'I want to learn about sustainable business practices',
-    'sustainability_projects': 'I would like to work on reducing waste on campus'
+    basicInfo: {
+      name: 'Test User',
+      email: 'test@berkeley.edu',
+      graduatingYear: '2025',
+      coreValue: 'Leadership'
+    },
+    selectedCommittees: ['marketing', 'sustainability'],
+    committeeResponses: {
+      marketing: {
+        workload: 'I prioritize tasks by deadline and importance',
+        initiative: 'I would create a social media campaign',
+        portfolio: 'https://example.com/portfolio'
+      },
+      sustainability: {
+        interest: 'I want to learn about sustainable business practices',
+        perspective: 'I have experience with campus eco-projects'
+      }
+    },
+    generalResponses: {
+      whyJoinHBSA: 'I want to contribute to the community'
+    },
+    resumeUrl: 'https://example.com/resume.pdf'
   };
-  
-  const result = writeToSheet(testData);
-  console.log('Test result:', result);
+  writeToSheet(testData);
 } 

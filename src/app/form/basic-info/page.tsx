@@ -18,6 +18,11 @@ export default function BasicInfoPage() {
     if (!basicInfo.name.trim()) {
       newErrors.name = 'Name is required'
     }
+    if (!basicInfo.email.trim()) {
+      newErrors.email = 'Email is required'
+    } else if (!/^\S+@\S+\.\S+$/.test(basicInfo.email)) {
+      newErrors.email = 'Enter a valid email address'
+    }
 
     if (!basicInfo.graduatingYear) {
       newErrors.graduatingYear = 'Graduating year is required'
@@ -44,7 +49,7 @@ export default function BasicInfoPage() {
         <div className="max-w-4xl mx-auto px-6 py-6">
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-xl font-bold text-gray-900">HBSA Application</h1>
+              <h1 className="text-xl font-bold text-gray-900">HBSA Fall 2025 Associate Application</h1>
               <p className="text-sm text-gray-600">Step 1 of 4</p>
             </div>
             
@@ -124,6 +129,32 @@ export default function BasicInfoPage() {
                 )}
               </div>
 
+              {/* Email Field */}
+              <div className="space-y-3">
+                <label className="block text-gray-900 font-semibold text-lg">
+                  Email Address <span className="text-error-500">*</span>
+                </label>
+                <div className="relative">
+                  <input
+                    type="email"
+                    value={basicInfo.email}
+                    onChange={(e) => setBasicInfo({ email: e.target.value })}
+                    className={`
+                      w-full px-6 py-4 border-2 rounded-xl text-gray-900 placeholder-gray-400 text-lg
+                      focus:ring-4 focus:ring-primary-100 focus:border-primary-500 transition-all duration-300
+                      ${errors.email ? 'border-error-300 bg-error-50' : 'border-gray-300 hover:border-primary-400'}
+                    `}
+                    placeholder="Enter your email address"
+                  />
+                </div>
+                {errors.email && (
+                  <p className="text-error-600 text-sm font-medium flex items-center">
+                    <span className="w-1 h-1 bg-error-500 rounded-full mr-2"></span>
+                    {errors.email}
+                  </p>
+                )}
+              </div>
+
               {/* Graduating Year Field */}
               <div className="space-y-3">
                 <label className="block text-gray-900 font-semibold text-lg">
@@ -161,6 +192,16 @@ export default function BasicInfoPage() {
                 <label className="block text-gray-900 font-semibold text-lg">
                   Which Haas core value do you most embody and why? <span className="text-error-500">*</span>
                 </label>
+                {/* Help Text - moved above textarea and with strong contrast */}
+                <div className="bg-primary-50 rounded-xl p-4 border border-primary-100">
+                  <h4 className="font-semibold text-primary-900 mb-2">Haas Core Values:</h4>
+                  <ul className="text-sm text-gray-900 space-y-1">
+                    <li>• <strong>Question the Status Quo</strong> - Challenge conventional thinking</li>
+                    <li>• <strong>Confidence Without Attitude</strong> - Lead with humility</li>
+                    <li>• <strong>Students Always</strong> - Embrace lifelong learning</li>
+                    <li>• <strong>Beyond Yourself</strong> - Consider the greater good</li>
+                  </ul>
+                </div>
                 <div className="relative">
                   <textarea
                     value={basicInfo.coreValue}
@@ -181,17 +222,6 @@ export default function BasicInfoPage() {
                     {errors.coreValue}
                   </p>
                 )}
-                
-                {/* Help Text */}
-                <div className="bg-primary-50 rounded-xl p-4 border border-primary-100">
-                  <h4 className="font-semibold text-primary-900 mb-2">Haas Core Values:</h4>
-                  <ul className="text-sm text-primary-800 space-y-1">
-                    <li>• <strong>Question the Status Quo</strong> - Challenge conventional thinking</li>
-                    <li>• <strong>Confidence Without Attitude</strong> - Lead with humility</li>
-                    <li>• <strong>Students Always</strong> - Embrace lifelong learning</li>
-                    <li>• <strong>Beyond Yourself</strong> - Consider the greater good</li>
-                  </ul>
-                </div>
               </div>
             </div>
           </div>

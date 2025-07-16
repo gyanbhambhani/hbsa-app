@@ -1,12 +1,12 @@
 # HBSA Application Backend Setup Guide
 
 ## Overview
-This guide will help you set up the backend API for the HBSA application form, including Google Sheets integration for data storage and UploadThing for file uploads.
+This guide will help you set up the backend API for the HBSA application form, including Google Sheets integration for data storage.
 
 ## Architecture
 - **Frontend**: Next.js with React
 - **Backend**: Next.js API Routes
-- **File Storage**: UploadThing (already configured)
+- **File Storage**: Resume links (e.g., Google Drive)
 - **Data Storage**: Google Sheets via Google Apps Script
 - **Form State**: Zustand store
 
