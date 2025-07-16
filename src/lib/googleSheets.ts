@@ -145,28 +145,20 @@ function generateSubmissionId(formData: FormSubmission): string {
 
 // Helper function to format data for Google Sheets
 export function formatFormDataForSheets(formData: FormSubmission) {
-  const { basicInfo, selectedCommittees, committeeResponses, generalResponses, resumeUrl } = formData
-  
-  // Flatten committee responses
-  const flattenedCommitteeResponses: { [key: string]: string } = {}
-  selectedCommittees.forEach(committeeId => {
-    const responses = committeeResponses[committeeId] || {}
-    Object.entries(responses).forEach(([questionId, response]) => {
-      flattenedCommitteeResponses[`${committeeId}_${questionId}`] = response
-    })
-  })
-
+  // Send the data in the nested format that the new Google Apps Script expects
   return {
-    timestamp: new Date().toISOString(),
-    submissionId: generateSubmissionId(formData),
-    name: basicInfo.name.trim(),
-    email: basicInfo.email.trim(),
-    graduatingYear: basicInfo.graduatingYear.trim(),
-    coreValue: basicInfo.coreValue?.trim() || '',
-    selectedCommittees: selectedCommittees.join(', '),
-    whyJoinHBSA: generalResponses.whyJoinHBSA.trim(),
-    resumeUrl: resumeUrl.trim(),
-    ...flattenedCommitteeResponses
+    basicInfo: {
+      name: formData.basicInfo.name.trim(),
+      email: formData.basicInfo.email.trim(),
+      graduatingYear: formData.basicInfo.graduatingYear.trim(),
+      coreValue: formData.basicInfo.coreValue?.trim() || ''
+    },
+    selectedCommittees: formData.selectedCommittees,
+    committeeResponses: formData.committeeResponses,
+    generalResponses: {
+      whyJoinHBSA: formData.generalResponses.whyJoinHBSA.trim()
+    },
+    resumeUrl: formData.resumeUrl.trim()
   }
 }
 
