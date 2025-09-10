@@ -1,6 +1,7 @@
 export interface FormSubmission {
   basicInfo: {
-    name: string
+    firstName: string
+    lastName: string
     email: string
     graduatingYear: string
     coreValue: string
@@ -32,7 +33,11 @@ export async function submitToGoogleSheets(
   const timeout = config?.timeout || 10000
   const maxRetries = config?.retries || 3
 
+  console.log('Google Apps Script URL:', scriptUrl)
+  console.log('Environment variable:', process.env.NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL)
+
   if (!scriptUrl) {
+    console.log('No script URL found!')
     return { 
       success: false, 
       error: 'Google Apps Script URL not configured' 
@@ -50,6 +55,7 @@ export async function submitToGoogleSheets(
 
   // Format data for Google Sheets
   const formattedData = formatFormDataForSheets(formData)
+  console.log('Formatted data being sent:', JSON.stringify(formattedData, null, 2))
 
   // Retry logic
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
@@ -102,8 +108,12 @@ export async function submitToGoogleSheets(
 }
 
 function validateFormSubmission(formData: FormSubmission): string | null {
-  if (!formData.basicInfo?.name?.trim()) {
-    return 'Name is required'
+  if (!formData.basicInfo?.firstName?.trim()) {
+    return 'First name is required'
+  }
+  
+  if (!formData.basicInfo?.lastName?.trim()) {
+    return 'Last name is required'
   }
   
   if (!formData.basicInfo?.email?.trim()) {
@@ -139,7 +149,7 @@ function validateFormSubmission(formData: FormSubmission): string | null {
 
 function generateSubmissionId(formData: FormSubmission): string {
   const timestamp = Date.now()
-  const nameHash = formData.basicInfo.name.replace(/\s+/g, '').toLowerCase().slice(0, 5)
+  const nameHash = (formData.basicInfo.firstName + formData.basicInfo.lastName).replace(/\s+/g, '').toLowerCase().slice(0, 5)
   return `${nameHash}-${timestamp}`
 }
 
@@ -148,7 +158,8 @@ export function formatFormDataForSheets(formData: FormSubmission) {
   // Send the data in the nested format that the new Google Apps Script expects
   return {
     basicInfo: {
-      name: formData.basicInfo.name.trim(),
+      firstName: formData.basicInfo.firstName.trim(),
+      lastName: formData.basicInfo.lastName.trim(),
       email: formData.basicInfo.email.trim(),
       graduatingYear: formData.basicInfo.graduatingYear.trim(),
       coreValue: formData.basicInfo.coreValue?.trim() || ''

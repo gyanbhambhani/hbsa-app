@@ -27,6 +27,9 @@ function doGet(e) {
 // Handle POST requests (for form submissions)
 function doPost(e) {
   try {
+    console.log('Received request:', e);
+    console.log('Post data:', e.postData);
+    
     if (!e || !e.postData) {
       return ContentService
         .createTextOutput(JSON.stringify({
@@ -37,9 +40,12 @@ function doPost(e) {
         .setMimeType(ContentService.MimeType.JSON);
     }
 
+    console.log('Raw post data contents:', e.postData.contents);
     const formData = JSON.parse(e.postData.contents);
+    console.log('Parsed form data:', formData);
 
     if (!validateFormData(formData)) {
+      console.log('Validation failed for data:', formData);
       return ContentService
         .createTextOutput(JSON.stringify({
           success: false,
@@ -80,12 +86,44 @@ function doPost(e) {
 }
 
 function validateFormData(data) {
+  console.log('Validating data:', data);
+  console.log('Data type:', typeof data);
+  console.log('Data is null/undefined:', data === null || data === undefined);
+  
+  if (!data) {
+    console.log('Data is null or undefined');
+    return false;
+  }
+  
+  console.log('Basic info:', data.basicInfo);
+  console.log('Selected committees:', data.selectedCommittees);
+  console.log('Committee responses:', data.committeeResponses);
+  console.log('General responses:', data.generalResponses);
+  console.log('Resume URL:', data.resumeUrl);
+  
   // New structure validation
-  if (!data.basicInfo || !data.basicInfo.name || !data.basicInfo.email || !data.basicInfo.graduatingYear || !data.basicInfo.coreValue) return false;
-  if (!data.selectedCommittees || !Array.isArray(data.selectedCommittees) || data.selectedCommittees.length === 0) return false;
-  if (!data.committeeResponses || typeof data.committeeResponses !== 'object') return false;
-  if (!data.generalResponses || !data.generalResponses.whyJoinHBSA) return false;
-  if (!data.resumeUrl) return false;
+  if (!data.basicInfo || !data.basicInfo.firstName || !data.basicInfo.lastName || !data.basicInfo.email || !data.basicInfo.graduatingYear || !data.basicInfo.coreValue) {
+    console.log('Basic info validation failed');
+    return false;
+  }
+  if (!data.selectedCommittees || !Array.isArray(data.selectedCommittees) || data.selectedCommittees.length === 0) {
+    console.log('Selected committees validation failed');
+    return false;
+  }
+  if (!data.committeeResponses || typeof data.committeeResponses !== 'object') {
+    console.log('Committee responses validation failed');
+    return false;
+  }
+  if (!data.generalResponses || !data.generalResponses.whyJoinHBSA) {
+    console.log('General responses validation failed');
+    return false;
+  }
+  if (!data.resumeUrl) {
+    console.log('Resume URL validation failed');
+    return false;
+  }
+  
+  console.log('All validations passed');
   return true;
 }
 
@@ -102,11 +140,13 @@ function writeToSheet(formData) {
     const rowData = [
       new Date().toISOString(),
       Utilities.getUuid(),
-      formData.basicInfo.name,
+      formData.basicInfo.firstName,
+      formData.basicInfo.lastName,
       formData.basicInfo.email,
       formData.basicInfo.graduatingYear,
       formData.basicInfo.coreValue,
-      formData.selectedCommittees.join(', '),
+      formData.selectedCommittees[0] || '', // First committee
+      formData.selectedCommittees[1] || '', // Second committee
       formData.generalResponses.whyJoinHBSA,
       formData.resumeUrl
     ];
@@ -128,11 +168,13 @@ function setupSheetHeaders(sheet) {
   const headers = [
     'Timestamp',
     'Submission ID',
-    'Name',
+    'First Name',
+    'Last Name',
     'Email',
     'Graduating Year',
     'Core Value',
-    'Selected Committees',
+    'First Committee',
+    'Second Committee',
     'Why Join HBSA',
     'Resume URL'
   ];
@@ -149,8 +191,64 @@ function extractCommitteeResponses(committeeResponses) {
   // Returns responses in the order of getCommitteeQuestionHeaders()
   const headers = getCommitteeQuestionHeaders();
   const responses = [];
+  
+  // Mapping from readable headers back to committee/question IDs
+  const headerToIds = {
+    'Strategic Initiatives - Interest': ['strategic-initiatives', 'interest'],
+    'Strategic Initiatives - Commitment': ['strategic-initiatives', 'commitment'],
+    'Strategic Initiatives - Proposal': ['strategic-initiatives', 'proposal'],
+    'Tech - Excitement': ['tech', 'excitement'],
+    'Tech - Improvement': ['tech', 'improvement'],
+    'Tech - Dream Project': ['tech', 'dream-project'],
+    'SOAC - Interest': ['soac', 'interest'],
+    'SOAC - Communication': ['soac', 'communication'],
+    'SOAC - Unique Perspective': ['soac', 'unique-perspective'],
+    'SOAC - Improve Collaboration': ['soac', 'improve-collab'],
+    'Student Affairs - Failure': ['student-affairs', 'failure'],
+    'Student Affairs - Improve Experience': ['student-affairs', 'improve-experience'],
+    'Student Affairs - Midterm Event': ['student-affairs', 'midterm-event'],
+    'Sustainability - Interest': ['sustainability', 'interest'],
+    'Sustainability - Perspective': ['sustainability', 'perspective'],
+    'Professional Development - Interest': ['professional-development', 'interest'],
+    'Professional Development - Event Experience': ['professional-development', 'event-experience'],
+    'Professional Development - Skills': ['professional-development', 'skills'],
+    'Transfer Development - Community': ['transfer-development', 'community'],
+    'Transfer Development - Leadership': ['transfer-development', 'leadership'],
+    'Transfer Development - Inspiration': ['transfer-development', 'inspiration'],
+    'Marketing - Workload': ['marketing', 'workload'],
+    'Marketing - Initiative': ['marketing', 'initiative'],
+    'Marketing - Portfolio': ['marketing', 'portfolio'],
+    'Public Service - Impact': ['public-service', 'impact'],
+    'Public Service - Initiative': ['public-service', 'initiative'],
+    'Public Service - Ideas': ['public-service', 'ideas'],
+    'Public Service - Fundraising': ['public-service', 'fundraising'],
+    'Corporate Relations - Interest': ['corporate-relations', 'interest'],
+    'Corporate Relations - Strength': ['corporate-relations', 'strength'],
+    'Corporate Relations - Event': ['corporate-relations', 'event'],
+    'Finance - Interest': ['finance', 'interest'],
+    'Finance - Unique': ['finance', 'unique'],
+    'Entrepreneurship - Motivation': ['entrepreneurship', 'motivation'],
+    'Entrepreneurship - Spirit': ['entrepreneurship', 'spirit'],
+    'Entrepreneurship - Event': ['entrepreneurship', 'event'],
+    'DEI - Bias': ['dei', 'bias'],
+    'DEI - Belonging': ['dei', 'belonging'],
+    'DEI - Festival': ['dei', 'festival'],
+    'MBA Alumni Relations - Above Beyond': ['mba-alumni-relations', 'above-beyond'],
+    'MBA Alumni Relations - Feedback': ['mba-alumni-relations', 'feedback'],
+    'MBA Alumni Relations - Description': ['mba-alumni-relations', 'description'],
+    'MBA Alumni Relations - Projects': ['mba-alumni-relations', 'projects'],
+    'Integration - Cross Program': ['integration', 'cross-program'],
+    'Integration - Event': ['integration', 'event'],
+    'Sponsorships - Philanthropy Scenario': ['sponsorships', 'philanthropy-scenario'],
+    'Sponsorships - Target Sponsors': ['sponsorships', 'target-sponsors'],
+    'Sponsorships - Multinational Messaging': ['sponsorships', 'multinational-messaging'],
+    'Sponsorships - Motivation Contribution': ['sponsorships', 'motivation-contribution']
+  };
+  
   for (let i = 0; i < headers.length; i++) {
-    const [committeeId, questionId] = headers[i].split('__');
+    const header = headers[i];
+    const [committeeId, questionId] = headerToIds[header] || ['', ''];
+    
     if (
       committeeResponses[committeeId] &&
       Object.prototype.hasOwnProperty.call(committeeResponses[committeeId], questionId)
@@ -164,68 +262,73 @@ function extractCommitteeResponses(committeeResponses) {
 }
 
 function getCommitteeQuestionHeaders() {
-  // Update this list to match your new committee/question IDs
+  // Update this list to match your new committee/question IDs with readable titles
   return [
     // Strategic Initiatives
-    'strategic-initiatives__interest',
-    'strategic-initiatives__commitment',
-    'strategic-initiatives__proposal',
+    'Strategic Initiatives - Interest',
+    'Strategic Initiatives - Commitment',
+    'Strategic Initiatives - Proposal',
     // Tech
-    'tech__excitement',
-    'tech__improvement',
-    'tech__dream-project',
+    'Tech - Excitement',
+    'Tech - Improvement',
+    'Tech - Dream Project',
     // SOAC
-    'soac__interest',
-    'soac__communication',
-    'soac__unique-perspective',
-    'soac__improve-collab',
+    'SOAC - Interest',
+    'SOAC - Communication',
+    'SOAC - Unique Perspective',
+    'SOAC - Improve Collaboration',
     // Student Affairs
-    'student-affairs__failure',
-    'student-affairs__improve-experience',
-    'student-affairs__midterm-event',
+    'Student Affairs - Failure',
+    'Student Affairs - Improve Experience',
+    'Student Affairs - Midterm Event',
     // Sustainability
-    'sustainability__interest',
-    'sustainability__perspective',
+    'Sustainability - Interest',
+    'Sustainability - Perspective',
     // Professional Development
-    'professional-development__interest',
-    'professional-development__event-experience',
-    'professional-development__skills',
+    'Professional Development - Interest',
+    'Professional Development - Event Experience',
+    'Professional Development - Skills',
     // Transfer Development
-    'transfer-development__community',
-    'transfer-development__leadership',
-    'transfer-development__inspiration',
+    'Transfer Development - Community',
+    'Transfer Development - Leadership',
+    'Transfer Development - Inspiration',
     // Marketing
-    'marketing__workload',
-    'marketing__initiative',
-    'marketing__portfolio',
+    'Marketing - Workload',
+    'Marketing - Initiative',
+    'Marketing - Portfolio',
     // Public Service
-    'public-service__impact',
-    'public-service__initiative',
-    'public-service__ideas',
-    'public-service__fundraising',
+    'Public Service - Impact',
+    'Public Service - Initiative',
+    'Public Service - Ideas',
+    'Public Service - Fundraising',
     // Corporate Relations
-    'corporate-relations__interest',
-    'corporate-relations__strength',
-    'corporate-relations__event',
+    'Corporate Relations - Interest',
+    'Corporate Relations - Strength',
+    'Corporate Relations - Event',
     // Finance
-    'finance__interest',
-    'finance__unique',
+    'Finance - Interest',
+    'Finance - Unique',
     // Entrepreneurship
-    'entrepreneurship__motivation',
-    'entrepreneurship__spirit',
-    'entrepreneurship__event',
+    'Entrepreneurship - Motivation',
+    'Entrepreneurship - Spirit',
+    'Entrepreneurship - Event',
     // DEI
-    'dei__bias',
-    'dei__belonging',
-    'dei__festival',
+    'DEI - Bias',
+    'DEI - Belonging',
+    'DEI - Festival',
     // MBA & Alumni Relations
-    'mba-alumni-relations__above-beyond',
-    'mba-alumni-relations__feedback',
-    'mba-alumni-relations__description',
-    'mba-alumni-relations__projects',
+    'MBA Alumni Relations - Above Beyond',
+    'MBA Alumni Relations - Feedback',
+    'MBA Alumni Relations - Description',
+    'MBA Alumni Relations - Projects',
     // Integration
-    'integration__cross-program',
-    'integration__event'
+    'Integration - Cross Program',
+    'Integration - Event',
+    // Sponsorships
+    'Sponsorships - Philanthropy Scenario',
+    'Sponsorships - Target Sponsors',
+    'Sponsorships - Multinational Messaging',
+    'Sponsorships - Motivation Contribution'
   ];
 }
 
@@ -233,21 +336,24 @@ function getCommitteeQuestionHeaders() {
 function testSetup() {
   const testData = {
     basicInfo: {
-      name: 'Test User',
+      firstName: 'Test',
+      lastName: 'User',
       email: 'test@berkeley.edu',
       graduatingYear: '2025',
       coreValue: 'Leadership'
     },
-    selectedCommittees: ['marketing', 'sustainability'],
+    selectedCommittees: ['marketing', 'sponsorships'],
     committeeResponses: {
       marketing: {
         workload: 'I prioritize tasks by deadline and importance',
         initiative: 'I would create a social media campaign',
         portfolio: 'https://example.com/portfolio'
       },
-      sustainability: {
-        interest: 'I want to learn about sustainable business practices',
-        perspective: 'I have experience with campus eco-projects'
+      sponsorships: {
+        'philanthropy-scenario': 'I would maintain weekly communication with the foundation, providing detailed updates on our progress and the steps we\'re taking with legal and finance teams.',
+        'target-sponsors': 'I would pursue partnerships with Salesforce, Google, and McKinsey. Each has established campus recruiting budgets and potential for multi-year growth.',
+        'multinational-messaging': 'Multinational outreach is convincing when it demonstrates local impact and global reach. Here\'s a pitch with clear value proposition and next steps.',
+        'motivation-contribution': 'I want to join Sponsorships to build meaningful corporate partnerships that benefit both students and companies.'
       }
     },
     generalResponses: {

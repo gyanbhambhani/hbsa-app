@@ -1,7 +1,8 @@
 import { create } from 'zustand'
 
 export interface BasicInfo {
-  name: string
+  firstName: string
+  lastName: string
   email: string
   graduatingYear: string
   coreValue: string
@@ -47,7 +48,8 @@ export interface FormState {
 
 const initialState = {
   basicInfo: {
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     graduatingYear: '',
     coreValue: ''

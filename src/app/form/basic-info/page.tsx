@@ -15,8 +15,12 @@ export default function BasicInfoPage() {
   const validateForm = () => {
     const newErrors: { [key: string]: string } = {}
 
-    if (!basicInfo.name.trim()) {
-      newErrors.name = 'Name is required'
+    if (!basicInfo.firstName.trim()) {
+      newErrors.firstName = 'First name is required'
+    }
+    
+    if (!basicInfo.lastName.trim()) {
+      newErrors.lastName = 'Last name is required'
     }
     if (!basicInfo.email.trim()) {
       newErrors.email = 'Email is required'
@@ -102,31 +106,61 @@ export default function BasicInfoPage() {
           {/* Form */}
           <div className="bg-white rounded-lg border border-gray-200 p-6">
             <div className="space-y-8">
-              {/* Name Field */}
-              <div className="space-y-3">
-                <label className="block text-gray-900 font-semibold text-lg">
-                  Full Name <span className="text-error-500">*</span>
-                </label>
-                <div className="relative">
-                  <input
-                    type="text"
-                    value={basicInfo.name}
-                    onChange={(e) => setBasicInfo({ name: e.target.value })}
-                    className={`
-                      w-full px-6 py-4 border-2 rounded-xl text-gray-900 placeholder-gray-400 text-lg
-                      focus:ring-4 focus:ring-primary-100 focus:border-primary-500 transition-all duration-300
-                      ${errors.name ? 'border-error-300 bg-error-50' : 'border-gray-300 hover:border-primary-400'}
-                    `}
-                    placeholder="Enter your full name"
-                  />
-                  <UserIcon className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+              {/* Name Fields */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* First Name Field */}
+                <div className="space-y-3">
+                  <label className="block text-gray-900 font-semibold text-lg">
+                    First Name <span className="text-error-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={basicInfo.firstName}
+                      onChange={(e) => setBasicInfo({ firstName: e.target.value })}
+                      className={`
+                        w-full px-6 py-4 border-2 rounded-xl text-gray-900 placeholder-gray-400 text-lg
+                        focus:ring-4 focus:ring-primary-100 focus:border-primary-500 transition-all duration-300
+                        ${errors.firstName ? 'border-error-300 bg-error-50' : 'border-gray-300 hover:border-primary-400'}
+                      `}
+                      placeholder="Enter your first name"
+                    />
+                    <UserIcon className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  </div>
+                  {errors.firstName && (
+                    <p className="text-error-600 text-sm font-medium flex items-center">
+                      <span className="w-1 h-1 bg-error-500 rounded-full mr-2"></span>
+                      {errors.firstName}
+                    </p>
+                  )}
                 </div>
-                {errors.name && (
-                  <p className="text-error-600 text-sm font-medium flex items-center">
-                    <span className="w-1 h-1 bg-error-500 rounded-full mr-2"></span>
-                    {errors.name}
-                  </p>
-                )}
+
+                {/* Last Name Field */}
+                <div className="space-y-3">
+                  <label className="block text-gray-900 font-semibold text-lg">
+                    Last Name <span className="text-error-500">*</span>
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={basicInfo.lastName}
+                      onChange={(e) => setBasicInfo({ lastName: e.target.value })}
+                      className={`
+                        w-full px-6 py-4 border-2 rounded-xl text-gray-900 placeholder-gray-400 text-lg
+                        focus:ring-4 focus:ring-primary-100 focus:border-primary-500 transition-all duration-300
+                        ${errors.lastName ? 'border-error-300 bg-error-50' : 'border-gray-300 hover:border-primary-400'}
+                      `}
+                      placeholder="Enter your last name"
+                    />
+                    <UserIcon className="absolute right-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+                  </div>
+                  {errors.lastName && (
+                    <p className="text-error-600 text-sm font-medium flex items-center">
+                      <span className="w-1 h-1 bg-error-500 rounded-full mr-2"></span>
+                      {errors.lastName}
+                    </p>
+                  )}
+                </div>
               </div>
 
               {/* Email Field */}

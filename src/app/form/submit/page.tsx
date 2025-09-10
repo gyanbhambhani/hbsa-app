@@ -27,6 +27,14 @@ export default function SubmitPage() {
     generalResponses,
     resumeUrl
   })
+  
+  console.log('Basic Info Details:', {
+    firstName: basicInfo.firstName,
+    lastName: basicInfo.lastName,
+    email: basicInfo.email,
+    graduatingYear: basicInfo.graduatingYear,
+    coreValue: basicInfo.coreValue
+  })
 
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState('')
@@ -235,20 +243,24 @@ export default function SubmitPage() {
               <div className="flex flex-col sm:flex-row sm:space-x-8">
                 <div className="flex-1">
                   <span className="block text-gray-500 text-sm font-medium">Full Name</span>
-                  <span className="block text-lg font-semibold text-gray-900">{basicInfo.name || 'Not provided'}</span>
+                  <span className="block text-lg font-semibold text-gray-900">
+                    {basicInfo.firstName && basicInfo.lastName 
+                      ? `${basicInfo.firstName} ${basicInfo.lastName}` 
+                      : `Debug: firstName="${basicInfo.firstName}", lastName="${basicInfo.lastName}"`}
+                  </span>
                 </div>
                 <div className="flex-1">
                   <span className="block text-gray-500 text-sm font-medium">Email</span>
-                  <span className="block text-lg font-semibold text-gray-900">{basicInfo.email || 'Not provided'}</span>
+                  <span className="block text-lg font-semibold text-gray-900">{basicInfo.email || `Debug: email="${basicInfo.email}"`}</span>
                 </div>
                 <div className="flex-1">
                   <span className="block text-gray-500 text-sm font-medium">Graduating Year</span>
-                  <span className="block text-lg font-semibold text-gray-900">{basicInfo.graduatingYear || 'Not provided'}</span>
+                  <span className="block text-lg font-semibold text-gray-900">{basicInfo.graduatingYear || `Debug: graduatingYear="${basicInfo.graduatingYear}"`}</span>
                 </div>
               </div>
               <div className="mt-4">
                 <span className="block text-gray-500 text-sm font-medium">Haas Core Value</span>
-                <span className="block text-base text-gray-900">{basicInfo.coreValue || 'Not provided'}</span>
+                <span className="block text-base text-gray-900">{basicInfo.coreValue || `Debug: coreValue="${basicInfo.coreValue}"`}</span>
               </div>
             </div>
 

@@ -394,5 +394,40 @@ export const committees: Committee[] = [
         type: 'textarea'
       }
     ]
+  },
+  {
+    id: 'sponsorships',
+    label: 'Sponsorships',
+    description: 'The Sponsorships Committee aims to grow Berkeley Haas\'s presence with private companies and foundations worldwide. As an associate, you will help identify and cultivate partners through targeted outreach, strengthen our national and international footprint, and steward ongoing relationships. You\'ll work with senior contacts at leading organizations to build long-term, value-aligned partnerships that support Haas undergraduates. We look forward to your application.',
+    questions: [
+      {
+        id: 'philanthropy-scenario',
+        label: 'Philanthropy scenario (stakeholder management) A foundation has approved funding, but the disbursement is delayed due to back end issues. How will you keep the foundation\'s stakeholders satisfied until the funds arrive? Please include your communication cadence, the key updates you will provide, the internal steps you will drive with legal and finance, any interim recognition ideas, and a simple contingency plan.',
+        required: true,
+        wordLimit: 150,
+        type: 'textarea'
+      },
+      {
+        id: 'target-sponsors',
+        label: 'Target sponsors and rationale List three to five companies you would pursue as Haas sponsors and explain why each is a strong fit. Please address alignment with Haas programs and students, mutual value for recruiting, brand, or CSR, likelihood of budget, and potential for multi-year growth.',
+        required: true,
+        wordLimit: 200,
+        type: 'textarea'
+      },
+      {
+        id: 'multinational-messaging',
+        label: 'Multinational messaging What makes outreach to a multinational convincing? Then draft a short pitch email we could send to a regional or global head of campus, ESG, or brand. Please include a clear value proposition, one quantifiable student-impact metric, a regional or local tie-in, and a specific next step.',
+        required: true,
+        wordLimit: 140,
+        type: 'textarea'
+      },
+      {
+        id: 'motivation-contribution',
+        label: 'Motivation and contribution Why do you want to join Sponsorships, and what will you uniquely add? Share one concrete example from outreach, CRM tracking, negotiation, writing, or project management that shows how you will lift our pipeline and partner experience.',
+        required: true,
+        wordLimit: 120,
+        type: 'textarea'
+      }
+    ]
   }
 ]; 

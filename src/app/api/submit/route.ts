@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
           from: 'HBSA Applications <no-reply@resend.dev>',
           to: formData.basicInfo.email,
           subject: 'HBSA Application Received',
-          html: `<p>Dear ${formData.basicInfo.name},</p>
+          html: `<p>Dear ${formData.basicInfo.firstName} ${formData.basicInfo.lastName},</p>
 <p>Thank you for submitting your application to HBSA. We have received your application and will review it soon.</p>
 <p>If you have any questions, feel free to reply to this email.</p>
 <p>Best regards,<br/>HBSA Team</p>`
