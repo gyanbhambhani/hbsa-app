@@ -116,7 +116,7 @@ export default function Home() {
                 </button>
                 
                                  <p className="text-xs text-gray-500">
-                   Applications close September 19th at 11:59 PM
+                   Applications close September 21st at 11:59 PM
                  </p>
               </div>
             </div>
