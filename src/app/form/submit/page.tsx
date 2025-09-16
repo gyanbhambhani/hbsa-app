@@ -129,7 +129,7 @@ export default function SubmitPage() {
             
             <p className="text-xl text-gray-600 leading-relaxed mb-8 max-w-2xl mx-auto">
               Thank you for your interest in HBSA. We&apos;ll review your application and get back to you soon.<br /><br />
-              <span className="font-semibold text-primary-700">Check your email for a confirmation.</span> If you haven&apos;t received one, please reach out to <a href="mailto:gyanb@berkeley.edu" className="underline text-blue-700">gyanb@berkeley.edu</a>.
+              <span className="font-semibold text-primary-700">You will receive an email confirmation from gyanb@berkeley.edu tonight</span> as confirmation that your application was received.
             </p>
             
             <button
