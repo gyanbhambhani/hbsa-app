@@ -30,8 +30,8 @@ export async function submitToGoogleSheets(
   config?: GoogleSheetsConfig
 ): Promise<{ success: boolean; error?: string; submissionId?: string }> {
   const scriptUrl = config?.scriptUrl || process.env.NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL
-  const timeout = config?.timeout || 10000
-  const maxRetries = config?.retries || 3
+  const timeout = config?.timeout || 30000
+  const maxRetries = config?.retries || 1
 
   console.log('Google Apps Script URL:', scriptUrl)
   console.log('Environment variable:', process.env.NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL)

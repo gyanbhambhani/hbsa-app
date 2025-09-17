@@ -1,8 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { submitToGoogleSheets, FormSubmission, validateFileUrl } from '@/lib/googleSheets'
-import { Resend } from 'resend'
-
-const resend = new Resend(process.env.RESEND_API_KEY)
 
 export async function POST(request: NextRequest) {
   try {
@@ -23,21 +20,6 @@ export async function POST(request: NextRequest) {
     const result = await submitToGoogleSheets(formData)
 
     if (result.success) {
-      // Send confirmation email
-      try {
-        await resend.emails.send({
-          from: 'HBSA Applications <no-reply@resend.dev>',
-          to: formData.basicInfo.email,
-          subject: 'HBSA Application Received',
-          html: `<p>Dear ${formData.basicInfo.firstName} ${formData.basicInfo.lastName},</p>
-<p>Thank you for submitting your application to HBSA. We have received your application and will review it soon.</p>
-<p>If you have any questions, feel free to reply to this email.</p>
-<p>Best regards,<br/>HBSA Team</p>`
-        })
-      } catch (emailError) {
-        console.error('Failed to send confirmation email:', emailError)
-        // Do not fail the submission if email fails
-      }
       return NextResponse.json(
         { 
           success: true, 
