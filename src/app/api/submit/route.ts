@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { submitToGoogleSheets, FormSubmission, validateFileUrl } from '@/lib/googleSheets'
+import { submitToGoogleSheets, FormSubmission, validateFileUrl, testGoogleAppsScriptConnection } from '@/lib/googleSheets'
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,6 +15,13 @@ export async function POST(request: NextRequest) {
 
     // Add submission timestamp
     formData.submittedAt = new Date().toISOString()
+
+    // Test connection first (optional, for debugging)
+    const connectionTest = await testGoogleAppsScriptConnection()
+    if (!connectionTest.success) {
+      console.warn('Google Apps Script connection test failed:', connectionTest.error)
+      // Continue anyway, as the test might fail but the actual submission could work
+    }
 
     // Submit to Google Sheets with enhanced error handling
     const result = await submitToGoogleSheets(formData)

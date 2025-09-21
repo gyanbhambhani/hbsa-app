@@ -30,8 +30,8 @@ export async function submitToGoogleSheets(
   config?: GoogleSheetsConfig
 ): Promise<{ success: boolean; error?: string; submissionId?: string }> {
   const scriptUrl = config?.scriptUrl || process.env.NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL
-  const timeout = config?.timeout || 30000
-  const maxRetries = config?.retries || 1
+  const timeout = config?.timeout || 60000 // Increased to 60 seconds
+  const maxRetries = config?.retries || 3 // Increased retries
 
   console.log('Google Apps Script URL:', scriptUrl)
   console.log('Environment variable:', process.env.NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL)
@@ -57,11 +57,16 @@ export async function submitToGoogleSheets(
   const formattedData = formatFormDataForSheets(formData)
   console.log('Formatted data being sent:', JSON.stringify(formattedData, null, 2))
 
-  // Retry logic
+  // Retry logic with improved error handling
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
+      console.log(`Attempt ${attempt}/${maxRetries} - Submitting to Google Apps Script...`)
+      
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), timeout)
+      const timeoutId = setTimeout(() => {
+        console.log(`Request timeout after ${timeout}ms`)
+        controller.abort()
+      }, timeout)
 
       const response = await fetch(scriptUrl, {
         method: 'POST',
@@ -74,13 +79,20 @@ export async function submitToGoogleSheets(
 
       clearTimeout(timeoutId)
 
+      console.log(`Response status: ${response.status}`)
+      console.log(`Response headers:`, Object.fromEntries(response.headers.entries()))
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        const errorText = await response.text()
+        console.error(`HTTP error response:`, errorText)
+        throw new Error(`HTTP error! status: ${response.status}, body: ${errorText}`)
       }
 
       const result = await response.json()
+      console.log(`Google Apps Script response:`, result)
       
       if (result.success) {
+        console.log(`Submission successful on attempt ${attempt}`)
         return { 
           success: true, 
           submissionId: result.submissionId || generateSubmissionId(formData)
@@ -92,6 +104,18 @@ export async function submitToGoogleSheets(
     } catch (error) {
       console.error(`Attempt ${attempt} failed:`, error)
       
+      // Don't retry on certain errors
+      if (error instanceof Error && (
+        error.message.includes('Invalid form data') ||
+        error.message.includes('Required fields are missing') ||
+        error.message.includes('HTTP error! status: 400')
+      )) {
+        return { 
+          success: false, 
+          error: error.message
+        }
+      }
+      
       if (attempt === maxRetries) {
         return { 
           success: false, 
@@ -99,8 +123,10 @@ export async function submitToGoogleSheets(
         }
       }
       
-      // Wait before retrying (exponential backoff)
-      await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000))
+      // Wait before retrying (exponential backoff with jitter)
+      const delay = Math.pow(2, attempt) * 1000 + Math.random() * 1000
+      console.log(`Waiting ${Math.round(delay)}ms before retry...`)
+      await new Promise(resolve => setTimeout(resolve, delay))
     }
   }
 
@@ -122,6 +148,10 @@ function validateFormSubmission(formData: FormSubmission): string | null {
   
   if (!formData.basicInfo?.graduatingYear?.trim()) {
     return 'Graduating year is required'
+  }
+  
+  if (!formData.basicInfo?.coreValue?.trim()) {
+    return 'Core value is required'
   }
   
   if (!formData.selectedCommittees?.length) {
@@ -180,5 +210,41 @@ export function validateFileUrl(url: string): boolean {
     return urlObj.protocol === 'https:' && urlObj.hostname.length > 0
   } catch {
     return false
+  }
+}
+
+// Helper function to test Google Apps Script connection
+export async function testGoogleAppsScriptConnection(scriptUrl?: string): Promise<{ success: boolean; error?: string }> {
+  const url = scriptUrl || process.env.NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL
+  
+  if (!url) {
+    return { success: false, error: 'No Google Apps Script URL configured' }
+  }
+
+  try {
+    console.log('Testing connection to Google Apps Script...')
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    console.log(`Test response status: ${response.status}`)
+    
+    if (response.ok) {
+      const result = await response.json()
+      console.log('Test response:', result)
+      return { success: true }
+    } else {
+      const errorText = await response.text()
+      return { success: false, error: `HTTP ${response.status}: ${errorText}` }
+    }
+  } catch (error) {
+    console.error('Connection test failed:', error)
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : 'Connection test failed' 
+    }
   }
 } 
