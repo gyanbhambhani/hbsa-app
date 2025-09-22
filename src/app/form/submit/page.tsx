@@ -61,6 +61,9 @@ export default function SubmitPage() {
     // Show success immediately for better UX (optimistic UI)
     setSubmitSuccess(true)
 
+    // Add 5 second delay before submitting
+    await new Promise(resolve => setTimeout(resolve, 5000))
+
     // Submit in background without blocking the UI
     try {
       const formData = {
