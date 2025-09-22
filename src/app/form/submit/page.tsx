@@ -83,7 +83,7 @@ export default function SubmitPage() {
 
       if (response.ok && result.success) {
         // Add 5 second delay before showing success page
-        await new Promise(resolve => setTimeout(resolve, 3000))
+        await new Promise(resolve => setTimeout(resolve, 1000))
         setSubmitSuccess(true)
       } else {
         setSubmitError(result.error || 'Failed to submit application. Please try again.')
