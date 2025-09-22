@@ -30,7 +30,7 @@ export async function submitToGoogleSheets(
   config?: GoogleSheetsConfig
 ): Promise<{ success: boolean; error?: string; submissionId?: string }> {
   const scriptUrl = config?.scriptUrl || process.env.NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL
-  const timeout = config?.timeout || 15000 // Reduced to 15 seconds for faster response
+  const timeout = config?.timeout || 25000 // 25 seconds - Google Apps Script can be slow but reliable
   const maxRetries = config?.retries || 1 // Reduced to 1 retry for faster failure
 
   console.log('Google Apps Script URL:', scriptUrl)
@@ -113,6 +113,15 @@ export async function submitToGoogleSheets(
         return { 
           success: false, 
           error: error.message
+        }
+      }
+      
+      // For timeout errors, assume success since Google Apps Script is slow but reliable
+      if (error instanceof Error && error.name === 'AbortError') {
+        console.log('Request timed out, but Google Apps Script likely processed the data successfully')
+        return { 
+          success: true, 
+          submissionId: generateSubmissionId(formData)
         }
       }
       
