@@ -58,6 +58,10 @@ export default function SubmitPage() {
     setIsSubmitting(true)
     setSubmitError('')
 
+    // Show success immediately for better UX (optimistic UI)
+    setSubmitSuccess(true)
+
+    // Submit in background without blocking the UI
     try {
       const formData = {
         basicInfo,
@@ -81,13 +85,15 @@ export default function SubmitPage() {
       const result = await response.json()
       console.log('Submit response:', result)
 
-      if (response.ok && result.success) {
-        setSubmitSuccess(true)
-      } else {
+      if (!response.ok || !result.success) {
+        // If submission fails, show error and hide success state
+        setSubmitSuccess(false)
         setSubmitError(result.error || 'Failed to submit application. Please try again.')
       }
     } catch (error) {
       console.error('Submit error:', error)
+      // If submission fails, show error and hide success state
+      setSubmitSuccess(false)
       setSubmitError('Failed to submit application. Please try again.')
     } finally {
       setIsSubmitting(false)
