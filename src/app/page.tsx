@@ -18,7 +18,7 @@ export default function Home() {
             </div>
                           <div className="text-right">
                 <p className="text-sm text-gray-500">UC Berkeley</p>
-                <p className="text-xs text-gray-400">Fall 2025 Applications</p>
+                <p className="text-xs text-gray-400">Spring 2026 Applications</p>
               </div>
           </div>
         </div>
@@ -116,7 +116,7 @@ export default function Home() {
                 </button>
                 
                                  <p className="text-xs text-gray-500">
-                   Applications close September 21st at 11:59 PM
+                   Applications close February 8th at 11:59 PM
                  </p>
               </div>
             </div>
@@ -129,7 +129,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-6 py-8">
           <div className="text-center space-y-4">
             <p className="text-sm text-gray-600">
-              © 2024 Haas Business Student Association. All rights reserved.
+              © 2026 Haas Business Student Association. All rights reserved.
             </p>
             <p className="text-xs text-gray-500">
               University of California, Berkeley • Haas School of Business

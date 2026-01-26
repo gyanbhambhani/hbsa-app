@@ -28,7 +28,7 @@ export default function FormWrapper({
           className="text-center mb-8"
         >
           <h1 className="text-4xl font-bold text-haasBlue mb-2">
-            HBSA Fall 2025 Associate Application
+            HBSA Spring 2026 Associate Application
           </h1>
           <p className="text-haasText text-lg">
             Step {stepNumber} of {totalSteps}: {currentStep}

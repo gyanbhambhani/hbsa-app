@@ -1,17 +1,51 @@
 /**
- * Google Apps Script for HBSA Application Form (Refactored for 2025+)
+ * Google Apps Script for HBSA Application Form - Spring 2026
  *
- * Instructions:
- * 1. Go to https://script.google.com/
- * 2. Create a new project
- * 3. Replace the default code with this template
- * 4. Deploy as a web app (Execute as: Me, Who has access: Anyone)https://script.google.com/macros/s/AKfycbwIOahlEcbh4ihBnST53AUBvB-x3gIjOFPB9s4Vk22mx3r5KFOU-e1eRRZIugm_s-_T/exec
- * 5. Copy the web app URL and set it as NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL in your .env.local
+ * SETUP INSTRUCTIONS:
+ * 
+ * STEP 1: Create a new Google Spreadsheet
+ *   1. Go to https://sheets.google.com
+ *   2. Create a new blank spreadsheet
+ *   3. Name it "HBSA Spring 2026 Applications"
+ *   4. Copy the SPREADSHEET_ID from the URL:
+ *      https://docs.google.com/spreadsheets/d/[THIS_IS_YOUR_SPREADSHEET_ID]/edit
+ *   5. Paste it below in the SPREADSHEET_ID variable
+ *
+ * STEP 2: Create Google Apps Script
+ *   1. Go to https://script.google.com/
+ *   2. Click "New Project"
+ *   3. Name it "HBSA Spring 2026 Handler"
+ *   4. Delete the default code and paste this entire file
+ *   5. Update the SPREADSHEET_ID below with your spreadsheet ID
+ *   6. Click Save (Ctrl+S)
+ *
+ * STEP 3: Deploy as Web App
+ *   1. Click "Deploy" > "New deployment"
+ *   2. Click the gear icon and select "Web app"
+ *   3. Set "Execute as" to "Me"
+ *   4. Set "Who has access" to "Anyone"
+ *   5. Click "Deploy"
+ *   6. Copy the Web app URL
+ *
+ * STEP 4: Update your .env.local
+ *   Add this line (replace with your actual URL):
+ *   NEXT_PUBLIC_GOOGLE_APPS_SCRIPT_URL=https://script.google.com/macros/s/YOUR_SCRIPT_ID/exec
+ *
+ * STEP 5: Test the setup
+ *   1. In Apps Script, click "Run" > "testSetup"
+ *   2. Grant permissions when prompted
+ *   3. Check your spreadsheet - a test row should appear
  */
 
-// Configuration - Update these values
-const SPREADSHEET_ID = '10Tsnpi-COzUKb4e5Sz36h3xsbcbtahlk6atnucMTDro'; // Your HBSA Applications spreadsheet
-const SHEET_NAME = 'HBSA_Fall_2025_Applications'; // Name of the sheet tab
+// ============================================================================
+// CONFIGURATION - UPDATE THIS WITH YOUR SPREADSHEET ID
+// ============================================================================
+const SPREADSHEET_ID = '199FoaFZSaPtOW251F6wsbxmJSS_Eg6MSmWOqvDNaGRM';
+const SHEET_NAME = 'HBSA_Spring_2026_Applications';
+
+// ============================================================================
+// DO NOT MODIFY BELOW THIS LINE (unless you know what you're doing)
+// ============================================================================
 
 // Handle GET requests (for testing)
 function doGet(e) {
@@ -87,37 +121,44 @@ function doPost(e) {
 
 function validateFormData(data) {
   console.log('Validating data:', data);
-  console.log('Data type:', typeof data);
-  console.log('Data is null/undefined:', data === null || data === undefined);
   
   if (!data) {
     console.log('Data is null or undefined');
     return false;
   }
   
-  console.log('Basic info:', data.basicInfo);
-  console.log('Selected committees:', data.selectedCommittees);
-  console.log('Committee responses:', data.committeeResponses);
-  console.log('General responses:', data.generalResponses);
-  console.log('Resume URL:', data.resumeUrl);
-  
-  // New structure validation
-  if (!data.basicInfo || !data.basicInfo.firstName || !data.basicInfo.lastName || !data.basicInfo.email || !data.basicInfo.graduatingYear || !data.basicInfo.coreValue) {
+  // Basic info validation
+  if (!data.basicInfo || 
+      !data.basicInfo.firstName || 
+      !data.basicInfo.lastName || 
+      !data.basicInfo.email || 
+      !data.basicInfo.graduatingYear || 
+      !data.basicInfo.coreValue) {
     console.log('Basic info validation failed');
     return false;
   }
-  if (!data.selectedCommittees || !Array.isArray(data.selectedCommittees) || data.selectedCommittees.length === 0) {
+  
+  // Committees validation
+  if (!data.selectedCommittees || 
+      !Array.isArray(data.selectedCommittees) || 
+      data.selectedCommittees.length === 0) {
     console.log('Selected committees validation failed');
     return false;
   }
+  
+  // Committee responses validation
   if (!data.committeeResponses || typeof data.committeeResponses !== 'object') {
     console.log('Committee responses validation failed');
     return false;
   }
+  
+  // General responses validation
   if (!data.generalResponses || !data.generalResponses.whyJoinHBSA) {
     console.log('General responses validation failed');
     return false;
   }
+  
+  // Resume URL validation
   if (!data.resumeUrl) {
     console.log('Resume URL validation failed');
     return false;
@@ -145,13 +186,13 @@ function writeToSheet(formData) {
       formData.basicInfo.email,
       formData.basicInfo.graduatingYear,
       formData.basicInfo.coreValue,
-      formData.selectedCommittees[0] || '', // First committee
-      formData.selectedCommittees[1] || '', // Second committee
+      formData.selectedCommittees[0] || '',
+      formData.selectedCommittees[1] || '',
       formData.generalResponses.whyJoinHBSA,
       formData.resumeUrl
     ];
 
-    // Add committee-specific responses in the correct order
+    // Add committee-specific responses
     const committeeColumns = extractCommitteeResponses(formData.committeeResponses);
     rowData.push(...committeeColumns);
 
@@ -188,61 +229,63 @@ function setupSheetHeaders(sheet) {
 }
 
 function extractCommitteeResponses(committeeResponses) {
-  // Returns responses in the order of getCommitteeQuestionHeaders()
   const headers = getCommitteeQuestionHeaders();
   const responses = [];
   
-  // Mapping from readable headers back to committee/question IDs
+  // Maps readable headers to [committeeId, questionId]
   const headerToIds = {
+    // Strategic Initiatives
     'Strategic Initiatives - Interest': ['strategic-initiatives', 'interest'],
     'Strategic Initiatives - Commitment': ['strategic-initiatives', 'commitment'],
     'Strategic Initiatives - Proposal': ['strategic-initiatives', 'proposal'],
+    // Tech
     'Tech - Excitement': ['tech', 'excitement'],
     'Tech - Improvement': ['tech', 'improvement'],
     'Tech - Dream Project': ['tech', 'dream-project'],
-    'SOAC - Interest': ['soac', 'interest'],
-    'SOAC - Communication': ['soac', 'communication'],
-    'SOAC - Unique Perspective': ['soac', 'unique-perspective'],
-    'SOAC - Improve Collaboration': ['soac', 'improve-collab'],
-    'Student Affairs - Failure': ['student-affairs', 'failure'],
-    'Student Affairs - Improve Experience': ['student-affairs', 'improve-experience'],
-    'Student Affairs - Midterm Event': ['student-affairs', 'midterm-event'],
-    'Sustainability - Interest': ['sustainability', 'interest'],
-    'Sustainability - Perspective': ['sustainability', 'perspective'],
-    'Professional Development - Interest': ['professional-development', 'interest'],
-    'Professional Development - Event Experience': ['professional-development', 'event-experience'],
-    'Professional Development - Skills': ['professional-development', 'skills'],
+    // Transfer Development
     'Transfer Development - Community': ['transfer-development', 'community'],
-    'Transfer Development - Leadership': ['transfer-development', 'leadership'],
-    'Transfer Development - Inspiration': ['transfer-development', 'inspiration'],
+    'Transfer Development - Mentorship': ['transfer-development', 'mentorship'],
+    'Transfer Development - Initiatives': ['transfer-development', 'initiatives'],
+    // Marketing
     'Marketing - Workload': ['marketing', 'workload'],
     'Marketing - Initiative': ['marketing', 'initiative'],
     'Marketing - Portfolio': ['marketing', 'portfolio'],
-    'Public Service - Impact': ['public-service', 'impact'],
+    // DEI
+    'DEI - Meaning': ['dei', 'meaning'],
+    'DEI - Inclusive Space': ['dei', 'inclusive-space'],
+    'DEI - Contribution': ['dei', 'contribution'],
+    // Entrepreneurship
+    'Entrepreneurship - Event': ['entrepreneurship', 'event'],
+    'Entrepreneurship - Spirit': ['entrepreneurship', 'spirit'],
+    'Entrepreneurship - Impact': ['entrepreneurship', 'impact'],
+    // Sustainability
+    'Sustainability - Interest': ['sustainability', 'interest'],
+    'Sustainability - Embody': ['sustainability', 'embody'],
+    'Sustainability - Change': ['sustainability', 'change'],
+    // Corporate Relations
+    'Corporate Relations - Interest': ['corporate-relations', 'interest'],
+    'Corporate Relations - Skills': ['corporate-relations', 'skills'],
+    'Corporate Relations - Event': ['corporate-relations', 'event'],
+    // Integration
+    'Integration - Turnout': ['integration', 'turnout'],
+    // Sponsorships
+    'Sponsorships - Secure Sponsorship': ['sponsorships', 'secure-sponsorship'],
+    'Sponsorships - Persuasion': ['sponsorships', 'persuasion'],
+    'Sponsorships - Value': ['sponsorships', 'value'],
+    'Sponsorships - Motivation': ['sponsorships', 'motivation'],
+    // Student Affairs
+    'Student Affairs - Why': ['student-affairs', 'why'],
+    'Student Affairs - Subcommittee': ['student-affairs', 'subcommittee'],
+    'Student Affairs - Event': ['student-affairs', 'event'],
+    // Public Service
+    'Public Service - Meaning': ['public-service', 'meaning'],
     'Public Service - Initiative': ['public-service', 'initiative'],
     'Public Service - Ideas': ['public-service', 'ideas'],
-    'Public Service - Fundraising': ['public-service', 'fundraising'],
-    'Corporate Relations - Interest': ['corporate-relations', 'interest'],
-    'Corporate Relations - Strength': ['corporate-relations', 'strength'],
-    'Corporate Relations - Event': ['corporate-relations', 'event'],
-    'Finance - Interest': ['finance', 'interest'],
-    'Finance - Unique': ['finance', 'unique'],
-    'Entrepreneurship - Motivation': ['entrepreneurship', 'motivation'],
-    'Entrepreneurship - Spirit': ['entrepreneurship', 'spirit'],
-    'Entrepreneurship - Event': ['entrepreneurship', 'event'],
-    'DEI - Bias': ['dei', 'bias'],
-    'DEI - Belonging': ['dei', 'belonging'],
-    'DEI - Festival': ['dei', 'festival'],
-    'MBA Alumni Relations - Above Beyond': ['mba-alumni-relations', 'above-beyond'],
-    'MBA Alumni Relations - Feedback': ['mba-alumni-relations', 'feedback'],
-    'MBA Alumni Relations - Description': ['mba-alumni-relations', 'description'],
-    'MBA Alumni Relations - Projects': ['mba-alumni-relations', 'projects'],
-    'Integration - Cross Program': ['integration', 'cross-program'],
-    'Integration - Event': ['integration', 'event'],
-    'Sponsorships - Philanthropy Scenario': ['sponsorships', 'philanthropy-scenario'],
-    'Sponsorships - Target Sponsors': ['sponsorships', 'target-sponsors'],
-    'Sponsorships - Multinational Messaging': ['sponsorships', 'multinational-messaging'],
-    'Sponsorships - Motivation Contribution': ['sponsorships', 'motivation-contribution']
+    // SOAC
+    'SOAC - Organization': ['soac', 'organization'],
+    'SOAC - Initiative': ['soac', 'initiative'],
+    'SOAC - Learning': ['soac', 'learning'],
+    'SOAC - Fellowship': ['soac', 'fellowship']
   };
   
   for (let i = 0; i < headers.length; i++) {
@@ -262,7 +305,7 @@ function extractCommitteeResponses(committeeResponses) {
 }
 
 function getCommitteeQuestionHeaders() {
-  // Update this list to match your new committee/question IDs with readable titles
+  // Spring 2026 committees and their question headers
   return [
     // Strategic Initiatives
     'Strategic Initiatives - Interest',
@@ -272,94 +315,105 @@ function getCommitteeQuestionHeaders() {
     'Tech - Excitement',
     'Tech - Improvement',
     'Tech - Dream Project',
-    // SOAC
-    'SOAC - Interest',
-    'SOAC - Communication',
-    'SOAC - Unique Perspective',
-    'SOAC - Improve Collaboration',
-    // Student Affairs
-    'Student Affairs - Failure',
-    'Student Affairs - Improve Experience',
-    'Student Affairs - Midterm Event',
-    // Sustainability
-    'Sustainability - Interest',
-    'Sustainability - Perspective',
-    // Professional Development
-    'Professional Development - Interest',
-    'Professional Development - Event Experience',
-    'Professional Development - Skills',
     // Transfer Development
     'Transfer Development - Community',
-    'Transfer Development - Leadership',
-    'Transfer Development - Inspiration',
+    'Transfer Development - Mentorship',
+    'Transfer Development - Initiatives',
     // Marketing
     'Marketing - Workload',
     'Marketing - Initiative',
     'Marketing - Portfolio',
-    // Public Service
-    'Public Service - Impact',
-    'Public Service - Initiative',
-    'Public Service - Ideas',
-    'Public Service - Fundraising',
+    // DEI
+    'DEI - Meaning',
+    'DEI - Inclusive Space',
+    'DEI - Contribution',
+    // Entrepreneurship
+    'Entrepreneurship - Event',
+    'Entrepreneurship - Spirit',
+    'Entrepreneurship - Impact',
+    // Sustainability
+    'Sustainability - Interest',
+    'Sustainability - Embody',
+    'Sustainability - Change',
     // Corporate Relations
     'Corporate Relations - Interest',
-    'Corporate Relations - Strength',
+    'Corporate Relations - Skills',
     'Corporate Relations - Event',
-    // Finance
-    'Finance - Interest',
-    'Finance - Unique',
-    // Entrepreneurship
-    'Entrepreneurship - Motivation',
-    'Entrepreneurship - Spirit',
-    'Entrepreneurship - Event',
-    // DEI
-    'DEI - Bias',
-    'DEI - Belonging',
-    'DEI - Festival',
-    // MBA & Alumni Relations
-    'MBA Alumni Relations - Above Beyond',
-    'MBA Alumni Relations - Feedback',
-    'MBA Alumni Relations - Description',
-    'MBA Alumni Relations - Projects',
     // Integration
-    'Integration - Cross Program',
-    'Integration - Event',
+    'Integration - Turnout',
     // Sponsorships
-    'Sponsorships - Philanthropy Scenario',
-    'Sponsorships - Target Sponsors',
-    'Sponsorships - Multinational Messaging',
-    'Sponsorships - Motivation Contribution'
+    'Sponsorships - Secure Sponsorship',
+    'Sponsorships - Persuasion',
+    'Sponsorships - Value',
+    'Sponsorships - Motivation',
+    // Student Affairs
+    'Student Affairs - Why',
+    'Student Affairs - Subcommittee',
+    'Student Affairs - Event',
+    // Public Service
+    'Public Service - Meaning',
+    'Public Service - Initiative',
+    'Public Service - Ideas',
+    // SOAC
+    'SOAC - Organization',
+    'SOAC - Initiative',
+    'SOAC - Learning',
+    'SOAC - Fellowship'
   ];
 }
 
-// Optional: Function to test the setup
+// ============================================================================
+// TEST FUNCTION - Run this to verify setup
+// ============================================================================
 function testSetup() {
   const testData = {
     basicInfo: {
       firstName: 'Test',
       lastName: 'User',
       email: 'test@berkeley.edu',
-      graduatingYear: '2025',
-      coreValue: 'Leadership'
+      graduatingYear: '2027',
+      coreValue: 'Question the Status Quo - I always challenge conventional thinking'
     },
-    selectedCommittees: ['marketing', 'sponsorships'],
+    selectedCommittees: ['marketing', 'dei'],
     committeeResponses: {
       marketing: {
-        workload: 'I prioritize tasks by deadline and importance',
-        initiative: 'I would create a social media campaign',
+        workload: 'I prioritize tasks by deadline and importance using a planner.',
+        initiative: 'I would create a TikTok series featuring day-in-the-life content.',
         portfolio: 'https://example.com/portfolio'
       },
-      sponsorships: {
-        'philanthropy-scenario': 'I would maintain weekly communication with the foundation, providing detailed updates on our progress and the steps we\'re taking with legal and finance teams.',
-        'target-sponsors': 'I would pursue partnerships with Salesforce, Google, and McKinsey. Each has established campus recruiting budgets and potential for multi-year growth.',
-        'multinational-messaging': 'Multinational outreach is convincing when it demonstrates local impact and global reach. Here\'s a pitch with clear value proposition and next steps.',
-        'motivation-contribution': 'I want to join Sponsorships to build meaningful corporate partnerships that benefit both students and companies.'
+      dei: {
+        meaning: 'DEI means creating spaces where everyone can thrive.',
+        'inclusive-space': 'I organized a cultural celebration at my community college.',
+        contribution: 'I hope to bring new perspectives and learn from others.'
       }
     },
     generalResponses: {
-      whyJoinHBSA: 'I want to contribute to the community'
+      whyJoinHBSA: 'I want to contribute to the Haas community and grow as a leader.'
     },
-    resumeUrl: 'https://example.com/resume.pdf'
+    resumeUrl: 'https://drive.google.com/file/d/example/view'
   };
-  writeToSheet(testData);
-} 
+  
+  console.log('Running test setup with data:', testData);
+  const success = writeToSheet(testData);
+  
+  if (success) {
+    console.log('Test setup successful! Check your spreadsheet.');
+  } else {
+    console.log('Test setup failed. Check the logs for errors.');
+  }
+}
+
+// ============================================================================
+// UTILITY FUNCTION - Clear test data (run manually if needed)
+// ============================================================================
+function clearTestData() {
+  const spreadsheet = SpreadsheetApp.openById(SPREADSHEET_ID);
+  const sheet = spreadsheet.getSheetByName(SHEET_NAME);
+  if (sheet) {
+    const lastRow = sheet.getLastRow();
+    if (lastRow > 1) {
+      sheet.deleteRows(2, lastRow - 1);
+      console.log('Cleared all data rows (kept headers)');
+    }
+  }
+}
