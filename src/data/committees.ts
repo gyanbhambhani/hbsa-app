@@ -459,5 +459,45 @@ export const committees: Committee[] = [
         type: 'textarea'
       }
     ]
+  },
+  {
+    id: 'mba-alumni-relations',
+    label: 'MBA & Alumni Relations',
+    description: 'MBA & Alumni Relations fosters an interconnected & supportive campus ' +
+      'environment. We enable students to fully leverage the Haas network through our MBA ' +
+      'and Alumni communities.',
+    questions: [
+      {
+        id: 'challenge',
+        label: 'Tell me about a time you challenged an existing approach to student engagement, ' +
+          'networking, or event planning. What did you do differently, and what was the outcome?',
+        required: true,
+        type: 'textarea'
+      },
+      {
+        id: 'teamwork',
+        label: 'Share an example of when you worked on a team where the goal was to connect ' +
+          'people from different backgrounds (e.g., peers, alumni, professionals). How did you ' +
+          'balance making your voice heard while also creating space for others?',
+        required: true,
+        type: 'textarea'
+      },
+      {
+        id: 'feedback',
+        label: 'Describe a time you sought out feedback or mentorship that helped you grow in ' +
+          'building relationships or strengthening a community. How did you apply what you ' +
+          'learned?',
+        required: true,
+        type: 'textarea'
+      },
+      {
+        id: 'value',
+        label: 'Give me an example of when you went out of your way to create value for ' +
+          'others - whether classmates, alumni, or your broader community. What motivated you, ' +
+          'and what impact did it have?',
+        required: true,
+        type: 'textarea'
+      }
+    ]
   }
 ];

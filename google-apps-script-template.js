@@ -285,7 +285,12 @@ function extractCommitteeResponses(committeeResponses) {
     'SOAC - Organization': ['soac', 'organization'],
     'SOAC - Initiative': ['soac', 'initiative'],
     'SOAC - Learning': ['soac', 'learning'],
-    'SOAC - Fellowship': ['soac', 'fellowship']
+    'SOAC - Fellowship': ['soac', 'fellowship'],
+    // MBA & Alumni Relations
+    'MBA Alumni Relations - Challenge': ['mba-alumni-relations', 'challenge'],
+    'MBA Alumni Relations - Teamwork': ['mba-alumni-relations', 'teamwork'],
+    'MBA Alumni Relations - Feedback': ['mba-alumni-relations', 'feedback'],
+    'MBA Alumni Relations - Value': ['mba-alumni-relations', 'value']
   };
   
   for (let i = 0; i < headers.length; i++) {
@@ -358,7 +363,12 @@ function getCommitteeQuestionHeaders() {
     'SOAC - Organization',
     'SOAC - Initiative',
     'SOAC - Learning',
-    'SOAC - Fellowship'
+    'SOAC - Fellowship',
+    // MBA & Alumni Relations
+    'MBA Alumni Relations - Challenge',
+    'MBA Alumni Relations - Teamwork',
+    'MBA Alumni Relations - Feedback',
+    'MBA Alumni Relations - Value'
   ];
 }
 
