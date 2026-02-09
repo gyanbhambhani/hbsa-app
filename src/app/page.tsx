@@ -1,11 +1,10 @@
 'use client'
 
-import { useRouter } from 'next/navigation'
 import Image from 'next/image'
-import { ArrowRightIcon, ClockIcon, UsersIcon, RocketLaunchIcon } from '@heroicons/react/24/outline'
+import { ClockIcon, UsersIcon, RocketLaunchIcon, XCircleIcon } from '@heroicons/react/24/outline'
+import { APPLICATION_CLOSED } from '@/lib/config'
 
 export default function Home() {
-  const router = useRouter()
   
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-blue-50">
@@ -92,33 +91,53 @@ export default function Home() {
             </div>
           </div>
 
-          {/* Right Column - CTA */}
+          {/* Right Column - CTA / Closed message */}
           <div className="bg-white rounded-2xl p-8 shadow-lg border border-gray-100">
             <div className="text-center space-y-6">
               <Image src="/hbsalogo.png" alt="HBSA Logo" width={232} height={90} />
               
-              <div>
-                <h3 className="text-2xl font-bold text-gray-900 mb-2">
-                  Ready to Apply?
-                </h3>
-                <p className="text-gray-600">
-                  Take the first step toward joining one of Berkeley&apos;s most prestigious student organizations.
-                </p>
-              </div>
-
-              <div className="space-y-4">
-                <button
-                  onClick={() => router.push('/form/basic-info')}
-                  className="w-full px-8 py-4 bg-gradient-to-r from-blue-600 to-yellow-500 text-white rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl hover:from-blue-700 hover:to-yellow-400 transition-all duration-300 flex items-center justify-center"
-                >
-                  Start Your Application
-                  <ArrowRightIcon className="w-5 h-5 ml-2" />
-                </button>
-                
-                                 <p className="text-xs text-gray-500">
-                   Applications close February 8th at 11:59 PM
-                 </p>
-              </div>
+              {APPLICATION_CLOSED ? (
+                <>
+                  <div className="flex justify-center">
+                    <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
+                      <XCircleIcon className="w-10 h-10 text-gray-500" />
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                      Applications Are Closed
+                    </h3>
+                    <p className="text-gray-600">
+                      The application deadline has passed. Thank you for your interest in HBSA. We hope to see you next cycle.
+                    </p>
+                  </div>
+                  <p className="text-sm text-gray-500">
+                    Spring 2026 applications have ended.
+                  </p>
+                </>
+              ) : (
+                <>
+                  <div>
+                    <h3 className="text-2xl font-bold text-gray-900 mb-2">
+                      Ready to Apply?
+                    </h3>
+                    <p className="text-gray-600">
+                      Take the first step toward joining one of Berkeley&apos;s most prestigious student organizations.
+                    </p>
+                  </div>
+                  <div className="space-y-4">
+                    <a
+                      href="/form/basic-info"
+                      className="w-full inline-flex items-center justify-center px-8 py-4 bg-gradient-to-r from-blue-600 to-yellow-500 text-white rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                    >
+                      Start Your Application
+                    </a>
+                    <p className="text-xs text-gray-500">
+                      Applications close February 8th at 11:59 PM
+                    </p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

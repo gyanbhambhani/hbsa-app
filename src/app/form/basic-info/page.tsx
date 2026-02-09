@@ -2,13 +2,37 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { ArrowRightIcon, ArrowLeftIcon, UserIcon, CalendarIcon, SparklesIcon } from '@heroicons/react/24/outline'
+import Link from 'next/link'
+import { ArrowRightIcon, ArrowLeftIcon, UserIcon, CalendarIcon, SparklesIcon, XCircleIcon } from '@heroicons/react/24/outline'
 import { useFormStore } from '@/store/formStore'
+import { APPLICATION_CLOSED } from '@/lib/config'
 
 export default function BasicInfoPage() {
   const router = useRouter()
   const { basicInfo, setBasicInfo } = useFormStore()
   const [errors, setErrors] = useState<{ [key: string]: string }>({})
+
+  if (APPLICATION_CLOSED) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <XCircleIcon className="w-10 h-10 text-gray-500" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Applications Are Closed</h1>
+          <p className="text-gray-600 mb-6">
+            The deadline has passed. Spring 2026 applications are no longer accepted. Thank you for your interest in HBSA.
+          </p>
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+          >
+            Return Home
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   const graduatingYears = ['2026', '2027', '2028', '2029']
 

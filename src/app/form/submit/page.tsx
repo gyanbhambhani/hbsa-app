@@ -2,11 +2,13 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { CheckIcon, ArrowLeftIcon, DocumentArrowUpIcon, UserGroupIcon, ChatBubbleLeftRightIcon } from '@heroicons/react/24/outline'
+import { CheckIcon, ArrowLeftIcon, DocumentArrowUpIcon, UserGroupIcon, ChatBubbleLeftRightIcon, XCircleIcon } from '@heroicons/react/24/outline'
 import ResumeLinkInput from '@/components/ResumeLinkInput'
 import { useFormStore } from '@/store/formStore'
 import { committees } from '@/data/committees'
+import { APPLICATION_CLOSED } from '@/lib/config'
 
 export default function SubmitPage() {
   const router = useRouter()
@@ -47,6 +49,7 @@ export default function SubmitPage() {
   }
 
   const handleSubmit = async () => {
+    if (APPLICATION_CLOSED) return
     // Accept any valid link
     try {
       new URL(resumeUrl)
@@ -106,6 +109,28 @@ export default function SubmitPage() {
 
   const stepNumber = 4 + selectedCommittees.length // After basic info, general, committees, and committee questions
   const totalSteps = 4 + selectedCommittees.length
+
+  if (APPLICATION_CLOSED) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-white to-primary-50 flex items-center justify-center px-6">
+        <div className="max-w-md w-full bg-white rounded-2xl shadow-lg border border-gray-100 p-8 text-center">
+          <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
+            <XCircleIcon className="w-10 h-10 text-gray-500" />
+          </div>
+          <h1 className="text-2xl font-bold text-gray-900 mb-2">Applications Are Closed</h1>
+          <p className="text-gray-600 mb-6">
+            The deadline has passed. Submissions are no longer accepted. Thank you for your interest in HBSA.
+          </p>
+          <Link
+            href="/"
+            className="inline-flex items-center justify-center px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors"
+          >
+            Return Home
+          </Link>
+        </div>
+      </div>
+    )
+  }
 
   if (submitSuccess) {
     return (

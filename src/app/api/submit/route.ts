@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { submitToGoogleSheets, FormSubmission, validateFileUrl } from '@/lib/googleSheets'
+import { APPLICATION_CLOSED } from '@/lib/config'
 
 export async function POST(request: NextRequest) {
+  if (APPLICATION_CLOSED) {
+    return NextResponse.json(
+      { error: 'Applications are closed. The deadline has passed.' },
+      { status: 410 }
+    )
+  }
   try {
     const formData: FormSubmission = await request.json()
 
