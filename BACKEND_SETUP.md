@@ -1,5 +1,7 @@
 # HBSA Spring 2026 Backend Setup Guide
 
+> **New:** For a full project overview (deploy, yearly updates, closing applications), start with the root **[README.md](./README.md)**.
+
 ## Quick Setup (5 minutes)
 
 ### Step 1: Create Google Spreadsheet
